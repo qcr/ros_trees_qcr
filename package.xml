@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>qut_tasks</name>
+  <version>0.0.0</version>
+  <description>The qut_tasks package</description>
+
+  <maintainer email="b.talbot@qut.edu.au">ben</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <exec_depend>qut_trees</exec_depend>
+
+  <export>
+  </export>
+</package>
