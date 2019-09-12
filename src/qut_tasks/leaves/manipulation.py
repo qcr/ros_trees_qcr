@@ -3,17 +3,17 @@ from qut_trees.leaves_ros import (ActionLeaf, PublisherLeaf, ServiceLeaf,
                                   SubscriberLeaf)
 
 #Gets a list of the name poses from MoveIt
-class GetNamedArmPoses(Leaf):
+class GetNamedArmPoses(ServiceLeaf):
      def __init__(self, *args, **kwargs):
         super(GetNamedArmPoses,
               self).__init__("Get named arm poses",
-                             service_name='/service/get_named_arm_poses',
+                             service_name='/get_named_arm_poses',
                              save=True,
                              *args,
                              **kwargs)
 
 #Moves arm to named pose using MoveIt
-class MoveToNamedArmPose(Leaf):
+class MoveToNamedArmPose(ActionLeaf):
     def __init__(self, *args, **kwargs):
         super(MoveToNamedArmPose,
               self).__init__("Move arm to named pose",
