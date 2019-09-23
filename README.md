@@ -73,23 +73,36 @@ Up to this point we have defined leaves as creating a single instance of a class
 from qut_msgs.msg import ActuateGripperGoal
 from qut_trees.leaves_ros import ActionLeaf
 
+
 class _ActuateGripper(ActionLeaf):
 
-  def __init__(self, *args, **kwargs):
-    super(_ActuateGripper, self).__init__(action_namespace='/action/actuate_gripper', *args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super(_ActuateGripper,
+              self).__init__(action_namespace='/action/actuate_gripper',
+                             *args,
+                             **kwargs)
+
 
 class OpenGripper(_ActuateGripper):
-  OPEN_GOAL = ActuateGripperGoal(mode=ActuateGripperGoal.MODE_STATE, state=ActuateGripperGoal.STATE_OPEN)
+    OPEN_GOAL = ActuateGripperGoal(mode=ActuateGripperGoal.MODE_STATE,
+                                   state=ActuateGripperGoal.STATE_OPEN)
 
-  def __init__(self, *args, **kwargs):
-    super(_ActuateGripper, self).__init__("Open Gripper", load_value=OpenGripper.OPEN_GOAL, *args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super(OpenGripper, self).__init__("Open Gripper",
+                                          load_value=OpenGripper.OPEN_GOAL,
+                                          *args,
+                                          **kwargs)
+
 
 class CloseGripper(_ActuateGripper):
-  CLOSE_GOAL = ActuateGripperGoal(mode=ActuateGripperGoal.MODE_STATE, state=ActuateGripperGoal.STATE_CLOSE)
+    CLOSE_GOAL = ActuateGripperGoal(mode=ActuateGripperGoal.MODE_STATE,
+                                    state=ActuateGripperGoal.STATE_CLOSE)
 
-  def __init__(self, *args, **kwargs):
-    super(_ActuateGripper, self).__init__("Close Gripper", load_value=CloseGripper.CLOSE_GOAL, *args, **kwargs)
-
+    def __init__(self, *args, **kwargs):
+        super(CloseGripper, self).__init__("Close Gripper",
+                                           load_value=CloseGripper.CLOSE_GOAL,
+                                           *args,
+                                           **kwargs)
 ```
 
 Adding leaves for moving to poses & named locations is the same process as above:
@@ -99,14 +112,22 @@ from qut_trees.leaves_ros import ActionLeaf
 
 class MoveGripperToPose(ActionLeaf):
 
-  def __init__(self, *args, **kwargs):
-    super(MoveGripperToPose, self).__init__("Move gripper to pose", action_namespace='/action/move_gripper/pose', *args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super(MoveGripperToPose,
+              self).__init__("Move gripper to pose",
+                             action_namespace='/action/move_gripper/pose',
+                             *args,
+                             **kwargs)
+
 
 class MoveGripperToLocation(ActionLeaf):
 
-  def __init__(self, *args, **kwargs):
-    super(MoveGripperToLocation, self).__init__("Move gripper to location", action_namespace='/action/move_gripper/location', *args, **kwargs)
-
+    def __init__(self, *args, **kwargs):
+        super(MoveGripperToLocation,
+              self).__init__("Move gripper to location",
+                             action_namespace='/action/move_gripper/location',
+                             *args,
+                             **kwargs)
 ```
 
 Now that we have created some re-usable leaves, next up let's add leaves to get bottle detections out of images from the robot hardware. To do this first call the ROS service for getting synced RGB-D images, then pass the result into the bottle detection service, and store all detections in a persistent location that we can later loop through to bin each bottle individually. Making a leaf for the synced RGB-D and bottle detection services is very similar to our leaves above, we just use a Service Leaf instead:
@@ -116,13 +137,24 @@ from qut_trees.leaves_ros import ServiceLeaf
 
 class GetSyncedRgbd(ServiceLeaf):
 
-  def __init__(self, *args, **kwargs):
-    super(GetSyncedRgbd, self).__init__("Get Synced RGBD", service_name='/service/get_synced_rgbd', save=True, *args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super(GetSyncedRgbd,
+              self).__init__("Get Synced RGBD",
+                             service_name='/service/get_synced_rgbd',
+                             save=True,
+                             *args,
+                             **kwargs)
+
 
 class DetectBottles(ServiceLeaf):
 
-  def __init__(self, *args, **kwargs):
-    super(DetectBottles, self).__init__("Detect bottles", service_name='/service/detect_bottles', save=True, *args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super(DetectBottles,
+              self).__init__("Detect bottles",
+                             service_name='/service/detect_bottles',
+                             save=True,
+                             *args,
+                             **kwargs)
 
 ```
 
@@ -131,45 +163,73 @@ Enabling the **save** flag means that both leaves will save their results such t
 Lastly, we need to make some basic leaves which don't need ROS to print a list of detected objects and pop (i.e. consume) an item from a list. We have already looked at the input and output parts of a leaf lifecycle, but for these tasks we have to look at the processing part of the lifecycle: defining how a leaf gets a result from the input by providing a `result_fn` to the constructor. For the `ActionLeaf` & `ServiceLeaf` classes we used above their `result_fn` is already written for us which calls the Action Server / Service with the leaf input data & return the response as the leaf output data. 
 
 ```python
+import qut_trees.data_management as dm
 from qut_trees.leaves import Leaf
 
 class PrintObjects(Leaf):
 
-  def __init__(self, *args, **kwargs):
-    super(PrintObjects, self).__init__("Print Objects", result_fn=self._print_objects, *args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super(PrintObjects, self).__init__("Print Objects",
+                                           result_fn=self._print_objects,
+                                           *args,
+                                           **kwargs)
 
-  def _print_objects(self):
-    if self.loaded_data is None or not self.loaded_data:
-      print("The detector found no objects!")
-    else:
-      print("The detector found %d objects at the following coordinates:" % len(self.loaded_data.objects))
-      for o in self.loaded_data.objects:
-        print("\tObject of pixel dimensions %dx%d @ top left coordinates: (%d,%d)" % (o.width, o.height, o.left, o.top))
+    def _print_objects(self):
+        if self.loaded_data is None or not self.loaded_data:
+            print("The detector found no objects!")
+        else:
+            print(
+                "The detector found %d objects at the following coordinates:" %
+                len(self.loaded_data.objects))
+            for o in self.loaded_data.objects:
+                print(
+                    "\tObject of pixel dimensions %dx%d @ top left coordinates: (%d,%d)"
+                    % (o.width, o.height, o.left, o.top))
 
-    return None
+        return None
+
 
 class PopFromList(Leaf):
 
-  def __init__(self, pop_position=0, *args, **kwargs):
-    super(PopFromList, self).__init__("Pop from list", result_fn=self._pop_item, *args, **kwargs)
-    self.pop_position = pop_position
+    def __init__(self, pop_position=0, *args, **kwargs):
+        super(PopFromList, self).__init__("Pop from list",
+                                          result_fn=self._pop_item,
+                                          *args,
+                                          **kwargs)
+        self.pop_position = pop_position
 
-  def _pop_item(self):
-    item = self.loaded_data.pop(self.pop_position)
-    # SAVE LOADED DATA BACK INTO WHERE WE LOADED THE DATA FROM
-    return item
-
+    def _pop_item(self):
+        item = self.loaded_data.pop(self.pop_position)
+        if self.load_key is not None:
+            dm.set_value(self.load_key, self.loaded_data)
+        else:
+            dm.set_last_value(self, self.loaded_data)
+        return item
 ```
 
-The print leaf does BLAH, the other leaf does BLAH. And that's it, we know have all the leaves we need to complete this task. While this may have seemed a long process, remember that we have done this from scratch with no shared leaves available to help us in. In practice, most of the leaves you need will already be implemented and simply a `import qut_tasks.leaves.<leaf_type>` call away!
+The print leaf does BLAH, the other leaf does BLAH. And that's it, we now have all the leaves we need to complete this task. While this may have seemed a long process, remember that we have done this from scratch with no shared leaves available to help us in. In practice, most of the leaves you need will already be implemented and simply a `import qut_tasks.leaves.<leaf_type>` call away!
 
 ### Part 2: Using branches to create re-usable behaviours from leaves (writing sub-behaviours)
 
+
+
+
 Step through the BinItem branch which will take an argument for a function to get the pose of the item
+
+Could see how we could group the actions of getting synced RGB-D, detecting an object, and printing the objects into a branch as well that lets you choose which detector you would like to use.
 
 ### Part 3: Writing a behaviour tree for your task
 
-Write it
+Talk about putting it all into a tree. Link off to structure, control flow in a tree, etc. all work, then finish the explanation with...
+
+PRETTY PICTURE OF TREE
+
+Lead in to the python code (skip showing all of the leaf definitions for brevity...)
+
+```python
+
+my tree
+```
 
 ## Other useful information
 

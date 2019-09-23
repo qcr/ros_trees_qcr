@@ -1,0 +1,234 @@
+#!/usr/bin/env python
+
+from py_trees.composites import Sequence
+from py_trees.decorators import FailureIsSuccess, SuccessIsRunning
+from random import randint
+import rospy
+
+from geometry_msgs.msg import Pose, PoseStamped, Quaternion, Vector3
+from std_msgs.msg import Header
+
+from qut_msgs.msg import ActuateGripperGoal
+import qut_trees.data_management as dm
+from qut_trees.leaves import Leaf
+from qut_trees.leaves_ros import ActionLeaf, ServiceLeaf
+from qut_trees.trees import BehaviourTree
+
+try:
+    input = raw_input
+except NameError:
+    pass
+
+################################################################################
+############################### Leaf definitions ###############################
+################################################################################
+
+
+class _ActuateGripper(ActionLeaf):
+
+    def __init__(self, *args, **kwargs):
+        super(_ActuateGripper,
+              self).__init__(action_namespace='/action/actuate_gripper',
+                             *args,
+                             **kwargs)
+
+
+class CloseGripper(_ActuateGripper):
+    CLOSE_GOAL = ActuateGripperGoal(mode=ActuateGripperGoal.MODE_STATE,
+                                    state=ActuateGripperGoal.STATE_CLOSED)
+
+    def __init__(self, *args, **kwargs):
+        super(CloseGripper, self).__init__("Close Gripper",
+                                           load_value=CloseGripper.CLOSE_GOAL,
+                                           *args,
+                                           **kwargs)
+
+
+class GetSyncedRgbd(ServiceLeaf):
+
+    def __init__(self, *args, **kwargs):
+        super(GetSyncedRgbd,
+              self).__init__("Get Synced RGBD",
+                             service_name='/service/get_synced_rgbd',
+                             save=True,
+                             *args,
+                             **kwargs)
+
+
+class DetectBottles(ServiceLeaf):
+
+    def __init__(self, *args, **kwargs):
+        super(DetectBottles,
+              self).__init__("Detect bottles",
+                             service_name='/service/detect_bottles',
+                             save=True,
+                             *args,
+                             **kwargs)
+
+
+class MoveGripperToPose(ActionLeaf):
+
+    def __init__(self, *args, **kwargs):
+        super(MoveGripperToPose,
+              self).__init__("Move gripper to pose",
+                             action_namespace='/action/move_gripper/pose',
+                             *args,
+                             **kwargs)
+
+
+class MoveGripperToLocation(ActionLeaf):
+
+    def __init__(self, *args, **kwargs):
+        super(MoveGripperToLocation,
+              self).__init__("Move gripper to location",
+                             action_namespace='/action/move_gripper/location',
+                             *args,
+                             **kwargs)
+
+
+class OpenGripper(_ActuateGripper):
+    OPEN_GOAL = ActuateGripperGoal(mode=ActuateGripperGoal.MODE_STATE,
+                                   state=ActuateGripperGoal.STATE_OPEN)
+
+    def __init__(self, *args, **kwargs):
+        super(OpenGripper, self).__init__("Open Gripper",
+                                          load_value=OpenGripper.OPEN_GOAL,
+                                          *args,
+                                          **kwargs)
+
+
+class Print(Leaf):
+
+    def __init__(self, *args, **kwargs):
+        super(Print, self).__init__("Print",
+                                    result_fn=self._print,
+                                    *args,
+                                    **kwargs)
+
+    def _print(self):
+        print(self.loaded_data)
+        return True
+
+
+class PrintObjects(Leaf):
+
+    def __init__(self, *args, **kwargs):
+        super(PrintObjects, self).__init__("Print Objects",
+                                           result_fn=self._print_objects,
+                                           *args,
+                                           **kwargs)
+
+    def _print_objects(self):
+        if self.loaded_data is None or not self.loaded_data:
+            print("The detector found no objects!")
+        else:
+            print(
+                "The detector found %d objects at the following coordinates:" %
+                len(self.loaded_data))
+            for o in self.loaded_data:
+                print(
+                    "\tObject of pixel dimensions %dx%d @ top left coordinates: (%d,%d)"
+                    % (o.width, o.height, o.x_left, o.y_top))
+
+        return True
+
+
+class PopFromList(Leaf):
+
+    def __init__(self, pop_position=0, *args, **kwargs):
+        super(PopFromList, self).__init__("Pop from list",
+                                          result_fn=self._pop_item,
+                                          *args,
+                                          **kwargs)
+        self.pop_position = pop_position
+
+    def _pop_item(self):
+        if not self.loaded_data:
+            return None
+        item = self.loaded_data.pop(self.pop_position)
+        if self.load_key is not None:
+            dm.set_value(self.load_key, self.loaded_data)
+        else:
+            dm.set_last_value(self, self.loaded_data)
+        return item
+
+
+class WaitForEnterKey(Leaf):
+
+    def __init__(self, *args, **kwargs):
+        super(WaitForEnterKey, self).__init__("Wait for Enter Key",
+                                              result_fn=self._wait_for_enter,
+                                              *args,
+                                              **kwargs)
+
+    def _wait_for_enter(self):
+        # NOTE: this is blocking in a leaf which is typically BAD
+        input(self.loaded_data if self.
+              loaded_data else "Press enter to continue: ")
+        return True
+
+
+################################################################################
+############################## Branch definitions ##############################
+################################################################################
+
+
+class BinItem(Sequence):
+
+    def __init__(self, load_pose_fn=None, load_pose_key=None, *args, **kwargs):
+        super(BinItem, self).__init__("Bin Item", [
+            OpenGripper(),
+            MoveGripperToLocation(load_value='workspace'),
+            MoveGripperToPose(load_key=load_pose_key, load_fn=load_pose_fn),
+            CloseGripper(),
+            MoveGripperToLocation(load_value='bin')
+        ])
+
+
+################################################################################
+######################### Tree definition & Execution ##########################
+################################################################################
+
+
+def object_list_from_response(leaf, response):
+    return leaf._default_save_fn(response.objects)
+
+
+def pose_from_object(leaf):
+    # TODO do something not rubbish here to get the pose...
+    # TODO think there are a lot of errors with how image stuff has been done
+    # (need ros_numpy...)
+    loaded_data = super(ActionLeaf, leaf)._default_load_fn()
+    return dm.auto_generate(PoseStamped(header=Header(frame_id='camera_wrist'),
+                                        pose=Pose(position=Vector3(
+                                            randint(100, 255) * 0.01,
+                                            3 * loaded_data.x_left / 640.0,
+                                            3 * loaded_data.y_top / 480.0),
+                                                  orientation=Quaternion())),
+                            type(leaf._action_class().action_goal.goal),
+                            breakdown=False)
+
+
+if __name__ == '__main__':
+    rospy.init_node("bottle_binner_tree")
+    BehaviourTree(
+        "Bottle Binner",
+        Sequence("Bin Bottles", [
+            GetSyncedRgbd(load_value='camera_wrist'),
+            DetectBottles(save_key='bottles',
+                          save_fn=object_list_from_response),
+            PrintObjects(load_key='bottles'),
+            FailureIsSuccess(
+                name="F=S",
+                child=SuccessIsRunning(
+                    name="S=R",
+                    child=Sequence("Bin bottle", [
+                        PopFromList(load_key='bottles', save_key='bottle'),
+                        Print(load_value="Binning bottle..."),
+                        BinItem(load_pose_fn=pose_from_object,
+                                load_pose_key='bottle'),
+                        Print(load_value="Succesfully binned bottle!")
+                    ]))),
+            WaitForEnterKey(
+                load_value="All bottles binned! Press enter to restart ... ")
+        ])).run(hz=30, push_to_start=True, log_level='WARN')
