@@ -3,7 +3,9 @@ from __future__ import print_function
 
 import actionlib
 import cv_bridge
+import numpy as np
 from random import randint
+import ros_numpy
 import rospy
 from sensor_msgs.msg import Image
 from std_msgs.msg import Header
@@ -77,61 +79,53 @@ class DummyBottleBinnerBackend(object):
 
     def cb_detect_bottles(self, req):
         # Generate some random detections within the images...
-        # TODO access to ros_numpy would be nice...
-        object_dims = [
-            (randint(5, 50), randint(5, 50)) for i in range(0, randint(1, 5))
-        ]
-        object_coords = [(randint(0, self.IMAGE_WIDTH - d[0]),
-                          randint(0, self.IMAGE_HEIGHT - d[1]))
-                         for d in object_dims]
-        object_indices = []
-        for d, c in zip(object_dims, object_coords):
-            stacked = [
-                list(range(r + c[0], r + c[0] + d[0]))
-                for r in range(c[1], c[1] + d[1])
-            ]
-            object_indices.append([i for ii in stacked for i in ii])
+        depth_image = ros_numpy.numpify(req.input_depth_image)
+        rgb_image = ros_numpy.numpify(req.input_rgb_image)
+        objects = []
+        for _ in range(0, randint(1, 5)):
+            wh = (randint(5, 50), randint(5, 50))  # (w, h)
+            xy = (randint(0, self.IMAGE_WIDTH - wh[0]),
+                  randint(0, self.IMAGE_HEIGHT - wh[1]))  # (x, y)
+            depth = ros_numpy.msgify(Image,
+                                     depth_image[xy[1]:xy[1] +
+                                                 wh[1], xy[0]:xy[0] + wh[0]],
+                                     encoding='mono8')
+            depth.header.frame_id = req.input_depth_image.header.frame_id
+            rgb = ros_numpy.msgify(Image,
+                                   rgb_image[xy[1]:xy[1] + wh[1], xy[0]:xy[0] +
+                                             wh[0], :],
+                                   encoding='rgb8')
+            rgb.header.frame_id = req.input_rgb_image.header.frame_id
+            objects.append(
+                Object(class_label='bottle',
+                       x_left=xy[0],
+                       y_top=xy[1],
+                       width=wh[0],
+                       height=wh[1],
+                       cropped_depth=depth,
+                       cropped_rgb=rgb))
         self._print_dramatic("Detecting bottles", 0.1)
-        return FindObjectsResponse(objects=[
-            Object(class_label='bottle',
-                   x_left=c[0],
-                   y_top=c[1],
-                   width=d[0],
-                   height=d[1],
-                   cropped_depth=Image(header=req.input_depth_image.header,
-                                       width=d[0],
-                                       height=d[1],
-                                       encoding=req.input_depth_image.encoding,
-                                       step=d[0],
-                                       data=req.input_depth_image.data))
-            for d, c in zip(object_dims, object_coords)
-        ])
+        return FindObjectsResponse(objects=objects)
 
     def cb_get_synced_rgbd(self, req):
         # Return a response with some dummy images
-        # TODO access to ros_numpy would be nice...
         self._print_dramatic("Getting synced RGBD", 0.1)
-        return GetSyncedImagesResponse(
-            synced_depth_image=Image(
-                header=Header(frame_id=req.camera_namespace),
-                height=self.IMAGE_HEIGHT,
-                width=self.IMAGE_WIDTH,
-                step=self.IMAGE_WIDTH,
-                encoding='mono8',
-                data=[
-                    randint(100, 255)
-                    for i in range(0, self.IMAGE_WIDTH * self.IMAGE_HEIGHT)
-                ]),
-            synced_rgb_image=Image(
-                header=Header(frame_id=req.camera_namespace),
-                height=self.IMAGE_HEIGHT,
-                width=self.IMAGE_WIDTH,
-                step=self.IMAGE_WIDTH * 3,
-                encoding='rgb8',
-                data=[
-                    randint(0, 255)
-                    for i in range(0, self.IMAGE_WIDTH * self.IMAGE_HEIGHT * 3)
-                ]))
+        depth_msg = ros_numpy.msgify(
+            Image,
+            np.random.randint(100, 255,
+                              (self.IMAGE_HEIGHT, self.IMAGE_WIDTH)).astype(
+                                  np.uint8),
+            encoding='mono8')
+        depth_msg.header.frame_id = req.camera_namespace
+        rgb_msg = ros_numpy.msgify(
+            Image,
+            np.random.randint(0, 255,
+                              (self.IMAGE_HEIGHT, self.IMAGE_WIDTH, 3)).astype(
+                                  np.uint8),
+            encoding='rgb8')
+        rgb_msg.header.frame_id = req.camera_namespace
+        return GetSyncedImagesResponse(synced_depth_image=depth_msg,
+                                       synced_rgb_image=rgb_msg)
 
     def cb_move_gripper_location(self, goal):
         success = goal.location_name in ['bin', 'workspace']

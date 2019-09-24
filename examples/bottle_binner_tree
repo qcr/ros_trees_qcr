@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
+import numpy as np
 from py_trees.composites import Sequence
 from py_trees.decorators import FailureIsSuccess, SuccessIsRunning
 from random import randint
+import ros_numpy
 import rospy
 
 from geometry_msgs.msg import Pose, PoseStamped, Quaternion, Vector3
@@ -127,8 +129,9 @@ class PrintObjects(Leaf):
                 len(self.loaded_data))
             for o in self.loaded_data:
                 print(
-                    "\tObject of pixel dimensions %dx%d @ top left coordinates: (%d,%d)"
-                    % (o.width, o.height, o.x_left, o.y_top))
+                    "\t'%s' of pixel dimensions %dx%d @ top left coordinates:"
+                    " (%d,%d)" %
+                    (o.class_label, o.width, o.height, o.x_left, o.y_top))
 
         return True
 
@@ -162,7 +165,7 @@ class WaitForEnterKey(Leaf):
                                               **kwargs)
 
     def _wait_for_enter(self):
-        # NOTE: this is blocking in a leaf which is typically BAD
+        # NOTE: this is blocking within a leaf ... typically BAD
         input(self.loaded_data if self.
               loaded_data else "Press enter to continue: ")
         return True
@@ -175,7 +178,7 @@ class WaitForEnterKey(Leaf):
 
 class BinItem(Sequence):
 
-    def __init__(self, load_pose_fn=None, load_pose_key=None, *args, **kwargs):
+    def __init__(self, load_pose_key, load_pose_fn=None, *args, **kwargs):
         super(BinItem, self).__init__("Bin Item", [
             OpenGripper(),
             MoveGripperToLocation(load_value='workspace'),
@@ -195,16 +198,32 @@ def object_list_from_response(leaf, response):
 
 
 def pose_from_object(leaf):
-    # TODO do something not rubbish here to get the pose...
-    # TODO think there are a lot of errors with how image stuff has been done
-    # (need ros_numpy...)
-    loaded_data = super(ActionLeaf, leaf)._default_load_fn()
-    return dm.auto_generate(PoseStamped(header=Header(frame_id='camera_wrist'),
-                                        pose=Pose(position=Vector3(
-                                            randint(100, 255) * 0.01,
-                                            3 * loaded_data.x_left / 640.0,
-                                            3 * loaded_data.y_top / 480.0),
-                                                  orientation=Quaternion())),
+    # Hacky, & NOT a good way to convert image coordinates to pose... but will
+    # do for the sake of our example
+    _FOVS = np.deg2rad(np.array([85, 50]))  # Horizontal & vertical FOV
+    _IMAGE_DIMS = np.array([640.0, 480.0])  # (w, h)
+    object_msg = super(ActionLeaf, leaf)._default_load_fn()
+
+    # Derive pose from depth of detection midpoint, & dumb FOV angle division
+    cropped_depth = ros_numpy.numpify(object_msg.cropped_depth)
+    r = 0.01 * cropped_depth[cropped_depth.shape[0] //
+                             2, cropped_depth.shape[1] // 2]
+    angles = _FOVS * (
+        (np.array([object_msg.x_left, object_msg.y_top]) + 0.5 *
+         np.array([object_msg.width, object_msg.height])) / _IMAGE_DIMS - 0.5)
+    xyz = r * np.array([
+        np.cos(angles[0]) * np.sin(np.pi / 2 - angles[1]),
+        np.sin(angles[0]) * np.sin(np.pi / 2 - angles[1]),
+        np.cos(np.pi / 2 - angles[1])
+    ])
+    xyz_uv = xyz / np.linalg.norm(xyz)
+    q = np.concatenate((np.sin(0) * np.cos(xyz_uv), np.array([np.cos(0)])))
+
+    # Autogenerate a goal message for the ActionLeaf from the Pose
+    return dm.auto_generate(PoseStamped(
+        header=Header(frame_id='camera_wrist'),
+        pose=Pose(position=Vector3(*xyz.tolist()),
+                  orientation=Quaternion(*q.tolist()))),
                             type(leaf._action_class().action_goal.goal),
                             breakdown=False)
 
