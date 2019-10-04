@@ -1,64 +1,77 @@
 # QUT Tasks Package
 
-The QUT Tasks package is where we generically define all of the tasks that our robots are capable of performing. Tasks are written in a way that they are robot agnostic from a software perspective, with specific robot hardware capabilities being the only factor limiting a robot from specific tasks (we haven't figured out a way to make an armless mobile base pick up a coffee... yet). 
+The QUT Tasks package is where we define all of the tasks that our robots are capable of performing. Tasks are written in a way that they are robot agnostic from a software perspective, with specific robot hardware capabilities being the only factor limiting a robot from specific tasks (we haven't figured out a way to make an armless mobile base pick up a coffee... yet). 
 
-A **task** is used to refer to something distinct we want the robot to do, often requiring the purposeful interweaving of many distinct components (which often come from many different internal and external authors). Bringing together software from different research areas, with different authors, and different conventions typically has a lot of pain associated with the process. To manage this, we break the problem of completing a task up into some isolated concepts and software compnents which are described in detail below. 
+A **task** is used to refer to something distinct we want the robot to do, often requiring the purposeful interweaving of many distinct components (which often come from many different internal and external authors). Bringing together software from different research areas, with different authors, and different conventions typically has a lot of pain associated with the process. To manage this, we break the problem of completing a task up into some isolated concepts and software components which are described in detail below. 
 
-## Defining a solution to a task
+## What does it mean to define a solution to a task
 
-There are 3 types of components that combine to form a solution to a given robot task:
+There are 3 components that combine to form a solution to a given robot task:
 
-- **capabilities**: these are what functionalities that are required from the robot in order to complete the task (examples: moving the arm to a pose, driving to a pose, detecting objects, saying a string, etc.),
+- **capabilities**: these are what functionalities that are required from the robot in order to complete the task (e.g. moving the arm to a pose, driving to a pose, detecting objects, saying a string, etc.),
 - **sub-behaviours**: define how a group of capabilities can be combined in a way that could be reused for a wide variety of potential tasks (examples: picking up an object, asking a question, going through a door, etc.), and
-- **behaviours**: is the cumulative definition of how a robot can apply its available capabilities to complete a given task (e.g. voice-controlled manipulation demo on the tabletop panda arm, goinng and making a coffee for a user, emptying all of the garbage bins, etc.).
+- **behaviours**: is the cumulative definition of how a robot can apply its available capabilities to complete a given task (e.g. voice-controlled manipulation demo on the tabletop panda arm, going and making a coffee for a user, emptying all of the garbage bins, etc.).
 
 The distinction between a sub-behaviour and behaviour can often be confusing (and is somewhat arbitrary). It is helpful to remember that if the behaviour you are trying to create is too general to locked down to a single tree (i.e. can be parameterised and applies to a number of different tasks), and it requires the combination of too many distinct re-usable parts to be a single robot capability, then it should be a sub-behaviour.
 
-To define how a robot can complete a task, we use **behaviour trees** which have been a common tool in the AI community for over a decade (originally being developed for the Halo games). Unsurprisingly given the name, behaviour trees define an entire agent behaviour using a tree structure consisting of nodes corresponding to one of the agent's defined capabilities. Behaviour trees have a number of advantages over Finite State Machines (FSM) which are typically used in robot system. The main advantage applicable for our robots is behaviour trees allow us to detach behaviour (how bits of functionality combine together to do something meaningful) from functionality (things a robot can do). Detaching behaviour from functionality means that robot capabilities can be re-used across any task, and complex behaviours can be created without worrying about implementation details. For example, the functionality to detect whether a door is open or closed can be implemented once, then re-used in the a plethora of behaviours (waiting for a door to be opened, waiting for a door to be closed, checking if a door is closed, only openning the door if it is closed, etc.) simply be changing the structure of the tree.
+To define how a robot can complete a task, we use **behaviour trees** which have been a common tool in the AI community for over a decade (originally being developed for the Halo games). Unsurprisingly given the name, behaviour trees define an entire agent behaviour using a tree structure consisting of nodes and edges. Nodes correspond to one of the agent's defined capabilities, and edges define a parent that controls when & how the node is called. 
 
-To implement a solution for a task with a behaviour tree, we map the 3 components above to distinct structures in the behaviour tree framework:
+Behaviour trees have a number of advantages over Finite State Machines (FSM), which are what is typically employed in robot systems. The main advantage applicable for our robots is behaviour trees allow us to detach behaviour (how bits of functionality combine together to do something meaningful) from functionality (things a robot can do). Detaching behaviour from functionality means that robot capabilities can be re-used across any task, and complex behaviours can be created without worrying about implementation details. For example, the functionality to detect whether a door is open or closed can be implemented once, then re-used in a plethora of behaviours (waiting for a door to be opened, waiting for a door to be closed, checking if a door is closed, only opening the door if it is closed, etc.) simply by changing the structure of the tree.
+
+To implement a solution for a task with a behaviour tree, we map the 3 components of a solution from above to distinct structures in the behaviour tree framework:
 
 - a **leaf** wraps a functionality of the robot, defining how the tree can execute the capability and receive the result once the functionality has been performed,
 - a **branch** defines a re-usable sub-section of a tree that encapsulates a parameterisable behaviour which could be reused across multiple different tasks, and
 - a **tree**, as mentioned above, is the definition of how a robot can interleave its capabilities to solve a task.
 
-From this transition from a task that a robot needs to solve, to formalising the components of a solution, then mapping behaviour tree structures to solution components, defining a behaviour tree to solve a task simply becomes the application of 3 steps: writing leaves to declare robot capabilities, defining re-usable behaviours with branches, and writing trees to solve specific tasks. The following sections take the example task of placing all of the visible bottles in the bin, and goes through building a tree from scratch to solve the task (minus the robot...).
+With all this said and done, solving a task boils down to 3 key steps which are tightly coupled require no particular order:
+
+- Writing leaves for each of the required robot capabilities (this step requires you to break down the task into what capabilities will the robot require to complete the task)
+- Defining re-usable branches to solve repeated / reusable sections of the task (sometimes your task may not require this, but it always helps to define branches if you think another task could use the branch later on)
+- Writing a tree for the behaviour that solves the task (often when completing this step, you will end up having to go back and add parts to the previous two steps)
+
+All this at this stage seems pretty abstract and "hand-wavey", but there is a full example below LINK of how the above principles can be applied to solve a non-trivial task.
+
+## Quick & Easy: Solving a task with a tree
+
+TODO 
 
 ## Conventions & Requirements
+
+Before getting to the example, we declare here best practices, conventions, and requirements when creating trees in this package. As mentioned above, these task solutions require the collaboration of many many authors so it is important to stick to similar approaches as much as possible
 
 TODO.... include an auto generated table of existing leaf definitions
 
 ## Example: Placing all visible bottles in the bin
 
-Lets solve the following task to help step through the process of creating a behaviour tree from scratch:
+For this example, consider a robot that needs to place all bottles that it can see from its default position into a nearby bin. To solve this task, the example below steps through the process of creating a behaviour tree from scratch. The formal description of the task we are trying to solve is:
 
     A tabletop manipulator needs to place all of the bottles in its visible workspace into the adjacent bin. The manipulator has the following ROS capabilities to available to assist in completing the task:
 
     - A ROS Service for getting a synced pair of RGB & depth images with the service name `/service/get_synced_rgbd`,
     - A ROS Service for detecting bottles which returns a list of detected bottles with the service name `/service/detect_bottles`,
-    - A ROS Action Server for actuating the gripper running in the action namespaces `/action/actuate_gripper`, and
+    - A ROS Action Server for actuating the gripper running in the action namespace `/action/actuate_gripper`, and
     - ROS Action Servers for moving the gripper to a pose (available in `/action/move_gripper/pose`) and to named locations `workspace` & `bin` (available in `/action/move_gripper/location`).
 
-Note: the ordering of the parts below is not important (sometimes it may make sense to write the tree first, other times declaring leaves, or anywhere in between), and for simple tasks part 2 may not be necessary. 
+Remember the ordering of how we approach the task is not important, but for this example we will start with the most accessible part: wrapping the robot capabilities defined above in leaves.
 
 ### Part 1: Declaring a robot capability (writing a leaf)
 
-The good news is that qut_trees LINK has already implemented leaves for you; all you have to do is instantiate, override, and expand the existing leaves as needed to meet the needs of the capability you are trying to provide. Full documentation for base leaves available can be found in the qut_trees README LINK, but we will go through the relevant details here as we step through the example.
+The good news is that qut_trees LINK has already implemented leaves for you; all you have to do is instantiate, override, and expand the existing leaves as needed to meet the needs of the capability you are trying to provide. Full documentation for base leaves available can be found in the package README LINK, but we will go through the relevant details here as we step through the example.
 
 In most cases, all that's required to create a leaf for your capability is to simply provide a couple of arguments to an appropriate class constructor. For example, creating a leaf to actuate the gripper is as simple as:
 
 ```python
 from qut_trees.leaves_ros import ActionLeaf
 
-open_gripper_leaf = ActionLeaf("Actuate Gripper", action_namespace='/action/actuate_gripper')
+actuate_gripper_leaf = ActionLeaf("Actuate Gripper", action_namespace='/action/actuate_gripper')
 ```
 
-All that's needed is a name for your leaf, and the namespace where the ROS Action Server exists! There are a lot of assumptions being made under the hood in qut_trees LINK that may not always meet your use case, so it is important to understand these assumptions for cases where you need to adjust them. 
+All that's needed is a name for your leaf, and the namespace where the ROS Action Server exists! There are a lot of assumptions being made under the hood in the qut_trees package that: may not always meet your use case, so it is important to understand these assumptions for cases where you need to adjust them. 
 
-The first assumption being made is around inputs and outputs. Leaves typically need some sort of input (e.g. a leaf moving a robot to a pose needs the goal pose as input), provide some sort of output (e.g. a leaf for checking if the robot's e-stop is on will output the e-stop state), or both (e.g. a leaf detecting grasp poses may take in RGB-D images as input & output data representing the found grasp poses). To control how a leaf handles input & output there are a number of constructor arguments defined in the `Leaf` class (**load_\*** parameters control input, & **save\*** parameters control output). Full details of how these parameters work is in the qut_trees documentation LINK.
+The first assumption being made is around inputs and outputs. Leaves typically need some sort of input (e.g. a leaf moving a robot to a pose needs the goal pose as input), provide some sort of output (e.g. a leaf for checking if the robot's e-stop is on will output the e-stop state), or both (e.g. a leaf detecting grasp poses may take in RGB-D images as input & output data representing the found grasp poses). To control how a leaf handles input & output there are a number of constructor arguments defined in the `Leaf` class. A much too broad summary is that **load_\*** parameters control input, & **save\*** parameters control output. Full details of how these parameters work is again in qut_trees README.
 
-Let's rollback the input assumption to address one of our use cases: opening & closing the gripper. To 'automagically' handle input & output the default behaviour of leaves is to try and form input data from whatever was last saved from a previous leaf, & save output data if the **save** argument is set. For opening the gripper we want leaves with static input data; i.e. input data to the gripper ROS Action Server that opens the gripper. To provide static input data instead of attempting to dynamically load the input at runtime, we use the **load_value** constructor argument:
-TODO stuff about msgs....
+Let's rollback the input assumption to address one of our use cases: opening & closing the gripper. To 'automagically' handle input & output the default behaviour of leaves is to try and form input data from whatever was last saved from a previous leaf, & save output data if the **save** argument is set. For opening the gripper we want leaves with static input data; i.e. a leaf for opening the gripper will always have the same input data commanding the ROS Action Server. To provide static input data instead of attempting to dynamically load the input at runtime, we use the **load_value** constructor argument:
 
 ```python
 from qut_msgs.msg import ActuateGripperGoal
@@ -66,6 +79,8 @@ from qut_trees.leaves_ros import ActionLeaf
 
 open_gripper_leaf = ActionLeaf("Actuate Gripper", action_namespace='/action/actuate_gripper', load_value=ActuateGripperGoal(mode=ActuateGripperGoal.MODE_STATE, state=ActuateGripperGoal.STATE_OPEN))
 ```
+
+TODO stuff about msgs
 
 Up to this point we have defined leaves as creating a single instance of a class from qut_trees. This works for leaves that will only be used once, but if we want to make leaves that can be used multiple times in a tree, re-used across different trees, expanded upon, override default leaf behaviour, provide custom functions, and lots more, implementing leaves as class definitions utilising inheritance makes a lot more sense. So, to create re-usable leaves for opening & closing the gripper we end up with the following:
 
