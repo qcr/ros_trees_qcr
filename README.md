@@ -57,36 +57,36 @@ Remember the ordering of how we approach the task is not important, but for this
 
 ### Part 1: Declaring a robot capability (writing a leaf)
 
-The good news is that qut_trees LINK has already implemented leaves for you; all you have to do is instantiate, override, and expand the existing leaves as needed to meet the needs of the capability you are trying to provide. Full documentation for base leaves available can be found in the package README LINK, but we will go through the relevant details here as we step through the example.
+The good news is that rv_trees LINK has already implemented leaves for you; all you have to do is instantiate, override, and expand the existing leaves as needed to meet the needs of the capability you are trying to provide. Full documentation for base leaves available can be found in the package README LINK, but we will go through the relevant details here as we step through the example.
 
 In most cases, all that's required to create a leaf for your capability is to simply provide a couple of arguments to an appropriate class constructor. For example, creating a leaf to actuate the gripper is as simple as:
 
 ```python
-from qut_trees.leaves_ros import ActionLeaf
+from rv_trees.leaves_ros import ActionLeaf
 
 actuate_gripper_leaf = ActionLeaf("Actuate Gripper", action_namespace='/action/actuate_gripper')
 ```
 
-All that's needed is a name for your leaf, and the namespace where the ROS Action Server exists! There are a lot of assumptions being made under the hood in the qut_trees package that: may not always meet your use case, so it is important to understand these assumptions for cases where you need to adjust them. 
+All that's needed is a name for your leaf, and the namespace where the ROS Action Server exists! There are a lot of assumptions being made under the hood in the rv_trees package that: may not always meet your use case, so it is important to understand these assumptions for cases where you need to adjust them. 
 
-The first assumption being made is around inputs and outputs. Leaves typically need some sort of input (e.g. a leaf moving a robot to a pose needs the goal pose as input), provide some sort of output (e.g. a leaf for checking if the robot's e-stop is on will output the e-stop state), or both (e.g. a leaf detecting grasp poses may take in RGB-D images as input & output data representing the found grasp poses). To control how a leaf handles input & output there are a number of constructor arguments defined in the `Leaf` class. A much too broad summary is that **load_\*** parameters control input, & **save\*** parameters control output. Full details of how these parameters work is again in qut_trees README.
+The first assumption being made is around inputs and outputs. Leaves typically need some sort of input (e.g. a leaf moving a robot to a pose needs the goal pose as input), provide some sort of output (e.g. a leaf for checking if the robot's e-stop is on will output the e-stop state), or both (e.g. a leaf detecting grasp poses may take in RGB-D images as input & output data representing the found grasp poses). To control how a leaf handles input & output there are a number of constructor arguments defined in the `Leaf` class. A much too broad summary is that **load_\*** parameters control input, & **save\*** parameters control output. Full details of how these parameters work is again in rv_trees README.
 
 Let's rollback the input assumption to address one of our use cases: opening & closing the gripper. To 'automagically' handle input & output the default behaviour of leaves is to try and form input data from whatever was last saved from a previous leaf, & save output data if the **save** argument is set. For opening the gripper we want leaves with static input data; i.e. a leaf for opening the gripper will always have the same input data commanding the ROS Action Server. To provide static input data instead of attempting to dynamically load the input at runtime, we use the **load_value** constructor argument:
 
 ```python
-from qut_msgs.msg import ActuateGripperGoal
-from qut_trees.leaves_ros import ActionLeaf
+from rv_msgs.msg import ActuateGripperGoal
+from rv_trees.leaves_ros import ActionLeaf
 
 open_gripper_leaf = ActionLeaf("Actuate Gripper", action_namespace='/action/actuate_gripper', load_value=ActuateGripperGoal(mode=ActuateGripperGoal.MODE_STATE, state=ActuateGripperGoal.STATE_OPEN))
 ```
 
 TODO stuff about msgs
 
-Up to this point we have defined leaves as creating a single instance of a class from qut_trees. This works for leaves that will only be used once, but if we want to make leaves that can be used multiple times in a tree, re-used across different trees, expanded upon, override default leaf behaviour, provide custom functions, and lots more, implementing leaves as class definitions utilising inheritance makes a lot more sense. So, to create re-usable leaves for opening & closing the gripper we end up with the following:
+Up to this point we have defined leaves as creating a single instance of a class from rv_trees. This works for leaves that will only be used once, but if we want to make leaves that can be used multiple times in a tree, re-used across different trees, expanded upon, override default leaf behaviour, provide custom functions, and lots more, implementing leaves as class definitions utilising inheritance makes a lot more sense. So, to create re-usable leaves for opening & closing the gripper we end up with the following:
 
 ```python
-from qut_msgs.msg import ActuateGripperGoal
-from qut_trees.leaves_ros import ActionLeaf
+from rv_msgs.msg import ActuateGripperGoal
+from rv_trees.leaves_ros import ActionLeaf
 
 
 class _ActuateGripper(ActionLeaf):
@@ -123,7 +123,7 @@ class CloseGripper(_ActuateGripper):
 Adding leaves for moving to poses & named locations is the same process as above:
 
 ```python
-from qut_trees.leaves_ros import ActionLeaf
+from rv_trees.leaves_ros import ActionLeaf
 
 class MoveGripperToPose(ActionLeaf):
 
@@ -148,7 +148,7 @@ class MoveGripperToLocation(ActionLeaf):
 Now that we have created some re-usable leaves, next up let's add leaves to get bottle detections out of images from the robot hardware. To do this first call the ROS service for getting synced RGB-D images, then pass the result into the bottle detection service, and store all detections in a persistent location that we can later loop through to bin each bottle individually. Making a leaf for the synced RGB-D and bottle detection services is very similar to our leaves above, we just use a Service Leaf instead:
 
 ```python
-from qut_trees.leaves_ros import ServiceLeaf
+from rv_trees.leaves_ros import ServiceLeaf
 
 class GetSyncedRgbd(ServiceLeaf):
 
@@ -178,8 +178,8 @@ Enabling the **save** flag means that both leaves will save their results such t
 Lastly, we need to make some basic leaves which don't need ROS to print a list of detected objects and pop (i.e. consume) an item from a list. We have already looked at the input and output parts of a leaf lifecycle, but for these tasks we have to look at the processing part of the lifecycle: defining how a leaf gets a result from the input by providing a `result_fn` to the constructor. For the `ActionLeaf` & `ServiceLeaf` classes we used above their `result_fn` is already written for us which calls the Action Server / Service with the leaf input data & return the response as the leaf output data. 
 
 ```python
-import qut_trees.data_management as dm
-from qut_trees.leaves import Leaf
+import rv_trees.data_management as dm
+from rv_trees.leaves import Leaf
 
 class PrintObjects(Leaf):
 
@@ -222,7 +222,7 @@ class PopFromList(Leaf):
         return item
 ```
 
-The print leaf does BLAH, the other leaf does BLAH. And that's it, we now have all the leaves we need to complete this task. While this may have seemed a long process, remember that we have done this from scratch with no shared leaves available to help us in. In practice, most of the leaves you need will already be implemented and simply a `import qut_tasks.leaves.<leaf_type>` call away!
+The print leaf does BLAH, the other leaf does BLAH. And that's it, we now have all the leaves we need to complete this task. While this may have seemed a long process, remember that we have done this from scratch with no shared leaves available to help us in. In practice, most of the leaves you need will already be implemented and simply a `import rv_tasks.leaves.<leaf_type>` call away!
 
 ### Part 2: Using branches to create re-usable behaviours from leaves (writing sub-behaviours)
 

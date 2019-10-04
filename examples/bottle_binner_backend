@@ -11,12 +11,12 @@ from sensor_msgs.msg import Image
 from std_msgs.msg import Header
 import sys
 
-from qut_msgs.msg import (ActuateGripperAction, ActuateGripperGoal,
-                          ActuateGripperResult, MoveToNamedLocationAction,
-                          MoveToNamedLocationResult, MoveToPoseAction,
-                          MoveToPoseResult, Object)
-from qut_msgs.srv import (GetSyncedImages, GetSyncedImagesResponse,
-                          FindObjects, FindObjectsResponse)
+from rv_msgs.msg import (ActuateGripperAction, ActuateGripperGoal,
+                         ActuateGripperResult, MoveToNamedPoseAction,
+                         MoveToNamedPoseResult, MoveToPoseAction,
+                         MoveToPoseResult, Object)
+from rv_msgs.srv import (GetSyncedImages, GetSyncedImagesResponse, FindObjects,
+                         FindObjectsResponse)
 
 
 class DummyBottleBinnerBackend(object):
@@ -40,7 +40,7 @@ class DummyBottleBinnerBackend(object):
                                                   self.cb_get_synced_rgbd)
         self._move_gripper_location_as = actionlib.SimpleActionServer(
             '/action/move_gripper/location',
-            MoveToNamedLocationAction,
+            MoveToNamedPoseAction,
             self.cb_move_gripper_location,
             auto_start=False)
         self._move_gripper_pose_as = actionlib.SimpleActionServer(
@@ -128,18 +128,17 @@ class DummyBottleBinnerBackend(object):
                                        synced_rgb_image=rgb_msg)
 
     def cb_move_gripper_location(self, goal):
-        success = goal.location_name in ['bin', 'workspace']
+        success = goal.pose_name in ['bin', 'workspace']
         if success:
             self._print_dramatic(
-                "Moving gripper to location '%s'" % goal.location_name, 5)
+                "Moving gripper to location '%s'" % goal.pose_name, 5)
         else:
             print("I do not know the location '%s' ... Aborting" %
-                  goal.location_name)
+                  goal.pose_name)
 
         # Return an appropriate result
-        (self._move_gripper_location_as.set_succeeded
-         if success else self._move_gripper_location_as.set_aborted)(
-             MoveToNamedLocationResult())
+        (self._move_gripper_location_as.set_succeeded if success else
+         self._move_gripper_location_as.set_aborted)(MoveToNamedPoseResult())
 
     def cb_move_gripper_pose(self, goal):
         pos = goal.goal_pose.pose.position

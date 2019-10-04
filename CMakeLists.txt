@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(qut_tasks)
+project(rv_tasks)
 
 find_package(catkin REQUIRED)
 
@@ -7,7 +7,7 @@ catkin_python_setup()
 
 catkin_package(
   #  INCLUDE_DIRS include
-  #  LIBRARIES qut_tasks
+  #  LIBRARIES rv_tasks
   #  CATKIN_DEPENDS other_catkin_pkg
   #  DEPENDS system_lib
   )

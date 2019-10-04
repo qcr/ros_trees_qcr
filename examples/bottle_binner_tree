@@ -10,11 +10,11 @@ import rospy
 from geometry_msgs.msg import Pose, PoseStamped, Quaternion, Vector3
 from std_msgs.msg import Header
 
-from qut_msgs.msg import ActuateGripperGoal
-import qut_trees.data_management as dm
-from qut_trees.leaves import Leaf
-from qut_trees.leaves_ros import ActionLeaf, ServiceLeaf
-from qut_trees.trees import BehaviourTree
+from rv_msgs.msg import ActuateGripperGoal
+import rv_trees.data_management as dm
+from rv_trees.leaves import Leaf
+from rv_trees.leaves_ros import ActionLeaf, ServiceLeaf
+from rv_trees.trees import BehaviourTree
 
 try:
     input = raw_input
