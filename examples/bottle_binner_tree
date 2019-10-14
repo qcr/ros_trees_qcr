@@ -36,7 +36,7 @@ class _ActuateGripper(ActionLeaf):
 
 
 class CloseGripper(_ActuateGripper):
-    CLOSE_GOAL = ActuateGripperGoal(mode=ActuateGripperGoal.MODE_STATE,
+    CLOSE_GOAL = ActuateGripperGoal(mode=ActuateGripperGoal.MODE_STATIC,
                                     state=ActuateGripperGoal.STATE_CLOSED)
 
     def __init__(self, *args, **kwargs):
@@ -89,7 +89,7 @@ class MoveGripperToLocation(ActionLeaf):
 
 
 class OpenGripper(_ActuateGripper):
-    OPEN_GOAL = ActuateGripperGoal(mode=ActuateGripperGoal.MODE_STATE,
+    OPEN_GOAL = ActuateGripperGoal(mode=ActuateGripperGoal.MODE_STATIC,
                                    state=ActuateGripperGoal.STATE_OPEN)
 
     def __init__(self, *args, **kwargs):
@@ -97,6 +97,26 @@ class OpenGripper(_ActuateGripper):
                                           load_value=OpenGripper.OPEN_GOAL,
                                           *args,
                                           **kwargs)
+
+
+class PopFromList(Leaf):
+
+    def __init__(self, pop_position=0, *args, **kwargs):
+        super(PopFromList, self).__init__("Pop from list",
+                                          result_fn=self._pop_item,
+                                          *args,
+                                          **kwargs)
+        self.pop_position = pop_position
+
+    def _pop_item(self):
+        if not self.loaded_data:
+            return None
+        item = self.loaded_data.pop(self.pop_position)
+        if self.load_key is not None:
+            dm.set_value(self.load_key, self.loaded_data)
+        else:
+            dm.set_last_value(self, self.loaded_data)
+        return item
 
 
 class Print(Leaf):
@@ -134,26 +154,6 @@ class PrintObjects(Leaf):
                     (o.class_label, o.width, o.height, o.x_left, o.y_top))
 
         return True
-
-
-class PopFromList(Leaf):
-
-    def __init__(self, pop_position=0, *args, **kwargs):
-        super(PopFromList, self).__init__("Pop from list",
-                                          result_fn=self._pop_item,
-                                          *args,
-                                          **kwargs)
-        self.pop_position = pop_position
-
-    def _pop_item(self):
-        if not self.loaded_data:
-            return None
-        item = self.loaded_data.pop(self.pop_position)
-        if self.load_key is not None:
-            dm.set_value(self.load_key, self.loaded_data)
-        else:
-            dm.set_last_value(self, self.loaded_data)
-        return item
 
 
 class WaitForEnterKey(Leaf):
@@ -246,8 +246,8 @@ if __name__ == '__main__':
                         Print(load_value="Binning bottle..."),
                         BinItem(load_pose_fn=pose_from_object,
                                 load_pose_key='bottle'),
-                        Print(load_value="Succesfully binned bottle!")
+                        Print(load_value="Successfully binned bottle!")
                     ]))),
             WaitForEnterKey(
                 load_value="All bottles binned! Press enter to restart ... ")
-        ])).run(hz=30, push_to_start=True, log_level='WARN')
+        ])).visualise()

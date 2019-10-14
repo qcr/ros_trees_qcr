@@ -64,7 +64,7 @@ class DummyBottleBinnerBackend(object):
 
     def cb_actuate_gripper(self, goal):
         # Print some dummy output
-        success = (goal.mode == ActuateGripperGoal.MODE_STATE)
+        success = (goal.mode == ActuateGripperGoal.MODE_STATIC)
         if success:
             self._print_dramatic(
                 "%s gripper" %

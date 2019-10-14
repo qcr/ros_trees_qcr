@@ -38,36 +38,53 @@ Here's the 1,2,3 TL;DR for creating a tree to solve a task:
 
 1. Create some leaves:
 
-    ```python
-    ```
+        #!python
+        from rv_trees.leaves_ros import ActionLeaf, ServiceLeaf
+
+        class DeriveSolution(ServiceLeaf):
+            def __init__(self, *args, **kwargs):
+                super(DeriveSolution, self).__init__(service_name="/derive_solution", *args, **kwargs)
+
+        class ApplySolution(ActionLeaf):
+            def __init__(self, *args, **kwargs):
+                super(DeriveSolution, self).__init__(action_namespace="/apply_solution", *args, **kwargs)
 
 2. Join the leaves up in a tree that solves a task:
 
-    ```python
-    ```
+        #!python
+        from py_trees.composite import Sequence
+        from rv_trees.trees import BehaviourTree
+
+        my_tree = BehaviourTree("Solve Task", Sequence("Solve", [DeriveSolution(), ApplySolution()]))
 
 3. Run the tree:
 
-    ```python
-    ```
+        #!python
+        my_tree.run(hz=30)
 
 Other helpful commands:
 
 - Showing an interactive tree with `rqt`:
 
-    `TODO`
+        #!bash
+        rqt_py_trees
 
 - Printing trees interactively in the terminal:
 
-    `TODO`
+        #!bash
+        rosrun py_trees_ros py-trees-tree-watcher
 
 - Printing blackboard variable values interactively:
 
-    `TODO`
+        #!bash
+        rosrun py_trees_ros py-trees-blackboard-watcher
 
 - Getting a static GraphViz graphic for your tree:
 
-    `TODO`
+        #!python
+        from rv_trees.trees import BehaviourTree
+        # Create your tree in a variable called 'my_tree'
+        my_tree.visualise()
 
 ## Conventions & best practices
 
@@ -137,7 +154,7 @@ class _ActuateGripper(ActionLeaf):
 
 
 class OpenGripper(_ActuateGripper):
-    OPEN_GOAL = ActuateGripperGoal(mode=ActuateGripperGoal.MODE_STATE,
+    OPEN_GOAL = ActuateGripperGoal(mode=ActuateGripperGoal.MODE_STATIC,
                                    state=ActuateGripperGoal.STATE_OPEN)
 
     def __init__(self, *args, **kwargs):
@@ -146,10 +163,9 @@ class OpenGripper(_ActuateGripper):
                                           *args,
                                           **kwargs)
 
-
 class CloseGripper(_ActuateGripper):
-    CLOSE_GOAL = ActuateGripperGoal(mode=ActuateGripperGoal.MODE_STATE,
-                                    state=ActuateGripperGoal.STATE_CLOSE)
+    CLOSE_GOAL = ActuateGripperGoal(mode=ActuateGripperGoal.MODE_STATIC,
+                                    state=ActuateGripperGoal.STATE_CLOSED)
 
     def __init__(self, *args, **kwargs):
         super(CloseGripper, self).__init__("Close Gripper",
@@ -198,7 +214,6 @@ class GetSyncedRgbd(ServiceLeaf):
                              *args,
                              **kwargs)
 
-
 class DetectBottles(ServiceLeaf):
 
     def __init__(self, *args, **kwargs):
@@ -233,14 +248,14 @@ class PrintObjects(Leaf):
         else:
             print(
                 "The detector found %d objects at the following coordinates:" %
-                len(self.loaded_data.objects))
-            for o in self.loaded_data.objects:
+                len(self.loaded_data))
+            for o in self.loaded_data:
                 print(
-                    "\tObject of pixel dimensions %dx%d @ top left coordinates: (%d,%d)"
-                    % (o.width, o.height, o.left, o.top))
+                    "\t'%s' of pixel dimensions %dx%d @ top left coordinates:"
+                    " (%d,%d)" %
+                    (o.class_label, o.width, o.height, o.x_left, o.y_top))
 
-        return None
-
+        return True
 
 class PopFromList(Leaf):
 
@@ -252,6 +267,8 @@ class PopFromList(Leaf):
         self.pop_position = pop_position
 
     def _pop_item(self):
+        if not self.loaded_data:
+            return None
         item = self.loaded_data.pop(self.pop_position)
         if self.load_key is not None:
             dm.set_value(self.load_key, self.loaded_data)
@@ -289,7 +306,7 @@ We could also group getting a synced RGB-D image, detecting an object, and print
 
 With everything needed to complete our task, the last step is creating a tree from our parts. There are all sorts of interesting parts to developing trees, which are explained much better in the suggested resources at the bottom of the page. Knowing about leaf status, composites, decorators, & blackboards is strongly recommended for creating trees (the [py_trees](https://py-trees.readthedocs.io/en/release-0.6.x/demos.html) demo tutorials are great for this). From this knowledge, we decide we want to create the following tree to complete the bottle binning task:
 
-TODO PRETTY PICTURE OF TREE
+![GraphViz image of our desired solution](./docs/example_graphviz.png "GraphViz view of the Bottle Binner")
 
 All it takes to create & run the tree specified above is the following lines of code:
 
@@ -313,7 +330,7 @@ BehaviourTree(
                     Print(load_value="Binning bottle..."),
                     BinItem(load_pose_fn=pose_from_object,
                             load_pose_key='bottle'),
-                    Print(load_value="Succesfully binned bottle!")
+                    Print(load_value="Successfully binned bottle!")
                 ]))),
         WaitForEnterKey(
             load_value="All bottles binned! Press enter to restart ... ")
@@ -321,6 +338,8 @@ BehaviourTree(
 ```
 
 Some extra leaves & functions have been used in the tree (`Print`, `WaitForEnterKey`, `object_list_from_response`, & `pose_from_object`) which we won't discuss here for the sake of brevity (see example code for details). And that's it, a robot that can pick up after you in only one block of code; pretty cool!
+
+![rqt view of the bottle binning solution](./docs/example_rqt_py_trees.png "rqt_py_trees view of the Bottle Binner")
 
 ## Useful links & information
 
