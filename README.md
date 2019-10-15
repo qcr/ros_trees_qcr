@@ -90,6 +90,11 @@ Other helpful commands:
 
 Below are some conventions & best practices we encourage everyone to use. This package is meant to help everyone's robots, so doing things in a consistent & robust way will maximise the benefit for your colleagues:
 
+- Use existing leaves and branches where possible (maximising reuse promotes greater consistency & robustness of our systems)
+- A leaf should be as input-agnostic as possible (e.g. writing a leaf to only work with a 3x1 numpy array of Float64s when in reality it could work with any iterable of 3 numbers only hinders future use of your leaf)
+- If you want your leaf or branch to be used by people, include it in the appropriate section of `rv_tasks.common_leaves.*` or `rv_tasks.common_branches.*`
+- Extend functionality in your own class rather than messing with the base `Leaf` classes (including )
+
 
 ## Sharing is Caring: What ready-made leaves are available?
 
