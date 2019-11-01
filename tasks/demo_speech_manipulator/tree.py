@@ -19,8 +19,8 @@ import rospy
 
 
 def default_intent(leaf):
-    #ret = leaf._default_load_fn()   #Uncoment once debbugging done
-    ret = ParseIntentRequest(input_text='move the red ball to top right') #Comment out once debugging done
+    #ret = ParseIntentRequest(input_text='move the red ball to top right') #Comment out once debugging done
+    ret = leaf._default_load_fn()   #Uncoment once debbugging done
     ret.intent_type = 'panda'
     print(ret)
     return ret
@@ -90,10 +90,11 @@ def tree():
     BehaviourTree(
         "speech_move_manipulator",
         Sequence("Listen", [
-        #listen_leaf,            #Get some speech
+        listen_leaf,            #Get some speech
         get_inference,
         get_image,
         get_objects,
+        Print(),
         do_things,
         say_string,
         Print(),                #Print what was said                                
