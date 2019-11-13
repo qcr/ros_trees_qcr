@@ -14,7 +14,7 @@ from sensor_msgs.msg import Image
 from rv_tasks.leaves.console import Print, SelectItem
 from  rv_msgs.msg import ListenGoal, ListenResult
 from  rv_msgs.srv import ParseIntentRequest, FindObjectsRequest
-from panda_speech.srv import PandaDoThingsRequest
+from panda_speech.srv import DoActionRequest
 import rospy
 
 
