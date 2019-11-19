@@ -19,8 +19,8 @@ import rospy
 
 
 def default_intent(leaf):
-    #ret = ParseIntentRequest(input_text='move the red ball to top right') #Comment out once debugging done
-    ret = leaf._default_load_fn()   #Uncoment once debbugging done
+    ret = ParseIntentRequest(input_text='can you see the sun glasses') #Comment out once debugging done
+    #ret = leaf._default_load_fn()   #Uncoment once debbugging done
     ret.intent_type = 'panda'
     print(ret)
     return ret
@@ -66,7 +66,7 @@ get_objects =  ServiceLeaf("Get list of objects from image",
 
 def doThings_load(leaf):
     #ret = leaf._default_load_fn()   #TODO this isn't handled @Ben
-    ret = PandaDoThingsRequest()
+    ret = DoActionRequest()
     ret.parsed_json = data_management.get_value('intent_json').intent_json
     #print(data_management.get_last_value().objects)
     ret.visible_objects = data_management.get_last_value().objects #TODO Why does this need .objects but the one above for RGB doesn't
@@ -90,11 +90,11 @@ def tree():
     BehaviourTree(
         "speech_move_manipulator",
         Sequence("Listen", [
-        listen_leaf,            #Get some speech
+        #listen_leaf,            #Get some speech
         get_inference,
         get_image,
         get_objects,
-        Print(),
+        # Print(),
         do_things,
         say_string,
         Print(),                #Print what was said                                
