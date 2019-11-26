@@ -8,8 +8,8 @@ import rv_trees.debugging as debugging
 import rv_trees.data_management as data_management
 import sys
 import time
-from rv_trees.leaves_ros import ActionLeaf, SubscriberLeaf, ServiceLeaf
-from sensor_msgs.msg import Image
+from rv_trees.leaves_ros import ActionLeaf, SubscriberLeaf, ServiceLeaf, PublisherLeaf
+from sensor_msgs.msg import Image, CameraInfo
 
 from rv_tasks.leaves.console import Print, SelectItem
 from  rv_msgs.msg import ListenGoal, ListenResult
@@ -19,7 +19,8 @@ import rospy
 
 
 def default_intent(leaf):
-    ret = ParseIntentRequest(input_text='can you see the sun glasses') #Comment out once debugging done
+    print("using default intent")
+    ret = ParseIntentRequest(input_text='can you see the bear') #Comment out once debugging done
     #ret = leaf._default_load_fn()   #Uncoment once debbugging done
     ret.intent_type = 'panda'
     print(ret)
@@ -36,11 +37,36 @@ listen_leaf = ActionLeaf("Listen",
 
 #Lets declare a subscriber leaf to grab an image
 get_image = SubscriberLeaf("Get Image",
-                                topic_name='/camera_driver/image_raw',
+                                topic_name='/camera/color/image_raw',
                                 topic_class=Image,
                                 save = True,
-                                expiry_time = 1.0 #TODO this wasn't working without exp time. Confirm fixed
+                                expiry_time = 10.0 #TODO this wasn't working without exp time. Confirm fixed
                                 )
+
+get_rgb_info = SubscriberLeaf("Get RGB Info",
+                                topic_name='/camera/color/camera_info',
+                                topic_class=CameraInfo,
+                                save = True,
+                                save_key = 'rgb_info',
+                                expiry_time = 10.0 #TODO this wasn't working without exp time. Confirm fixed
+                                )
+
+#
+get_depth_info = SubscriberLeaf("Get Depth Info",
+                                topic_name='/camera/depth/camera_info',
+                                topic_class=CameraInfo,
+                                save = True,
+                                save_key = 'depth_info',
+                                expiry_time = 10.0 #TODO this wasn't working without exp time. Confirm fixed
+                                )            
+
+get_depth_image = SubscriberLeaf("Get Depth Image",
+                                topic_name='/camera/depth/image_rect_raw',
+                                topic_class=Image,
+                                save = True,
+                                save_key = 'depth_image',
+                                expiry_time = 10.0 #TODO this wasn't working without exp time. Confirm fixed
+                                )     
 
 #Ok lets make an inference service leaf
 get_inference = ServiceLeaf("Get inference from string",
@@ -48,6 +74,12 @@ get_inference = ServiceLeaf("Get inference from string",
                             save = True,
                             save_key = 'intent_json',
                             load_fn = default_intent
+                            )
+
+#Publish the image you are sending to the detector
+send_image = PublisherLeaf("Publish Detection image",
+                            topic_name= '/tree/detection_in',
+                            topic_class=Image
                             )
 
 
@@ -65,6 +97,7 @@ get_objects =  ServiceLeaf("Get list of objects from image",
                             )
 
 def doThings_load(leaf):
+    print("doing things")
     #ret = leaf._default_load_fn()   #TODO this isn't handled @Ben
     ret = DoActionRequest()
     ret.parsed_json = data_management.get_value('intent_json').intent_json
@@ -90,14 +123,15 @@ def tree():
     BehaviourTree(
         "speech_move_manipulator",
         Sequence("Listen", [
-        #listen_leaf,            #Get some speech
+       # listen_leaf,            #Get some speech
         get_inference,
         get_image,
+        send_image,
         get_objects,
-        # Print(),
+        #Print(),
         do_things,
         say_string,
-        Print(),                #Print what was said                                
+        #Print(),                    
 
         ])).run(hz=30, push_to_start=True, log_level='WARN')
 
