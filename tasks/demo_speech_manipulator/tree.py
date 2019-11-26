@@ -12,10 +12,11 @@ from rv_trees.leaves_ros import ActionLeaf, SubscriberLeaf, ServiceLeaf, Publish
 from sensor_msgs.msg import Image, CameraInfo
 
 from rv_tasks.leaves.console import Print, SelectItem
-from  rv_msgs.msg import ListenGoal, ListenResult
+from  rv_msgs.msg import ListenGoal, ListenResult, GraspObjectGoal, GraspObjectResult, Objects
 from  rv_msgs.srv import ParseIntentRequest, FindObjectsRequest
 from panda_speech.srv import DoActionRequest
 import rospy
+
 
 
 def default_intent(leaf):
@@ -48,7 +49,7 @@ get_rgb_info = SubscriberLeaf("Get RGB Info",
                                 topic_class=CameraInfo,
                                 save = True,
                                 save_key = 'rgb_info',
-                                expiry_time = 10.0 #TODO this wasn't working without exp time. Confirm fixed
+                                expiry_time = 10.0 
                                 )
 
 #
@@ -57,7 +58,7 @@ get_depth_info = SubscriberLeaf("Get Depth Info",
                                 topic_class=CameraInfo,
                                 save = True,
                                 save_key = 'depth_info',
-                                expiry_time = 10.0 #TODO this wasn't working without exp time. Confirm fixed
+                                expiry_time = 10.0 
                                 )            
 
 get_depth_image = SubscriberLeaf("Get Depth Image",
@@ -65,7 +66,7 @@ get_depth_image = SubscriberLeaf("Get Depth Image",
                                 topic_class=Image,
                                 save = True,
                                 save_key = 'depth_image',
-                                expiry_time = 10.0 #TODO this wasn't working without exp time. Confirm fixed
+                                expiry_time = 10.0
                                 )     
 
 #Ok lets make an inference service leaf
@@ -81,7 +82,20 @@ send_image = PublisherLeaf("Publish Detection image",
                             topic_name= '/tree/detection_in',
                             topic_class=Image
                             )
+def setObject(leaf):
+  ret=GraspObjectGoal()
+  objects=Objects()
+  obejcts.depth_image=data_management.get_value('depth_image').depth_image
+  objects.depth_image=data_management.get_value('depth_info').depth_info
+  ret.objects=objects
+  return ret
 
+grasp_leaf = ActionLeaf("Grasp",
+                               action_namespace='/grasp_object',
+                               save=True,
+                               load_fn=setObject
+                              # load_value=GraspObjectGoal()
+                               )
 
 def rgb_findObjects_load(leaf):
     ret = FindObjectsRequest()
@@ -118,7 +132,6 @@ say_string = ActionLeaf("Say some text",
                             )
 
 
-
 def tree():
     BehaviourTree(
         "speech_move_manipulator",
@@ -126,13 +139,16 @@ def tree():
        # listen_leaf,            #Get some speech
         get_inference,
         get_image,
+        get_rgb_info,
+        get_depth_info,
+        get_depth_image,
         send_image,
         get_objects,
         #Print(),
         do_things,
         say_string,
+        grasp_leaf,
         #Print(),                    
-
         ])).run(hz=30, push_to_start=True, log_level='WARN')
 
 
