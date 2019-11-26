@@ -21,7 +21,7 @@ import rospy
 
 def default_intent(leaf):
     print("using default intent")
-    ret = ParseIntentRequest(input_text='can you see the bear') #Comment out once debugging done
+    ret = ParseIntentRequest(input_text='can you see the cup') #Comment out once debugging done
     #ret = leaf._default_load_fn()   #Uncoment once debbugging done
     ret.intent_type = 'panda'
     print(ret)
@@ -85,8 +85,8 @@ send_image = PublisherLeaf("Publish Detection image",
 def setObject(leaf):
   ret=GraspObjectGoal()
   objects=Objects()
-  obejcts.depth_image=data_management.get_value('depth_image').depth_image
-  objects.depth_image=data_management.get_value('depth_info').depth_info
+  objects.depth_image=data_management.get_value('depth_image')
+  objects.depth_info=data_management.get_value('depth_info')
   ret.objects=objects
   return ret
 
