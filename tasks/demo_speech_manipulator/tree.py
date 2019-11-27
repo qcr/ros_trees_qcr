@@ -14,15 +14,21 @@ from sensor_msgs.msg import Image, CameraInfo
 from rv_tasks.leaves.console import Print, SelectItem
 from  rv_msgs.msg import ListenGoal, ListenResult, GraspObjectGoal, GraspObjectResult, Objects, Detection
 from  rv_msgs.srv import ParseIntentRequest, FindObjectsRequest
-from panda_speech.srv import DoActionRequest
+from rv_tasks.leaves.manipulation import GetNamedGripperPoses, MoveToNamedGripperPose
+from panda_speech.srv import DoActionRequest, SayStringRequest
 import rospy
+import cv2
+import cv_bridge
+import numpy as np
+from std_srvs.srv import Empty
 
 
 
 def default_intent(leaf):
-    print("using default intent")
-    ret = ParseIntentRequest(input_text='can you move the cup') #Comment out once debugging done
-    #ret = leaf._default_load_fn()   #Uncoment once debbugging done
+    # print("using default intent")
+    # ret = ParseIntentRequest(input_text='can you move the bear') #Comment out once debugging done
+    ret = leaf._default_load_fn()   #Uncoment once debbugging done
+    ret.input_text= data_management.get_value('listen').text_heard
     ret.intent_type = 'panda'
     print(ret)
     return ret
@@ -30,7 +36,7 @@ def default_intent(leaf):
 #Lets make a listen leaf
 listen_leaf = ActionLeaf("Listen",
                                action_namespace='/action/listen',
-                               save=True,
+                               save_key='listen',
                                load_value=ListenGoal(timeout_seconds=120.0,  wait_for_wake=True), 
                                )
 
@@ -62,7 +68,7 @@ get_depth_info = SubscriberLeaf("Get Depth Info",
                                 )            
 
 get_depth_image = SubscriberLeaf("Get Depth Image",
-                                topic_name='/camera/depth/image_rect_raw',
+                                topic_name="/camera/depth/image_meters_aligned",
                                 topic_class=Image,
                                 save = True,
                                 save_key = 'depth_image',
@@ -82,20 +88,32 @@ send_image = PublisherLeaf("Publish Detection image",
                             topic_name= '/tree/detection_in',
                             topic_class=Image
                             )
-def setObject(leaf):
+
+recovery= ServiceLeaf("Recover arm",
+                      service_name= '/arm/recover'
+)
+
+def graspLoad(leaf):
+  print("loading grasp variables")
   ret=GraspObjectGoal()
   objects=Objects()
   objects.depth_image=data_management.get_value('depth_image')
   objects.depth_info=data_management.get_value('depth_info')
-  ret.objects=objects
-  detection=Detection()
-  detection.x_left=1
-  return ret
+  detection=data_management.get_value('doThingsret').object
+  if not (detection.x_left==0 and detection.y_top==0):
+    rospy.ServiceProxy('/arm/recover', Empty)
+    word_string=detection.class_label+" located at "+ str(detection.x_left) + ", "+str(detection.y_top)
+    print(word_string)
+    bridge = cv_bridge.CvBridge()
+    detection.cropped_mask = bridge.cv2_to_imgmsg(np.ones(shape=(objects.depth_image.height, objects.depth_image.width)))
+    objects.detections.append(detection)
+    ret.objects=objects
+    return ret
 
 grasp_leaf = ActionLeaf("Grasp",
                                action_namespace='/grasp_object',
                                save=True,
-                               load_fn=setObject
+                               load_fn=graspLoad
                               # load_value=GraspObjectGoal()
                                )
 
@@ -125,12 +143,21 @@ def doThings_load(leaf):
 do_things =  ServiceLeaf("Get instructions on what to do",
                             service_name= '/service/panda_do_things',
                             save = True,
+                            save_key = 'doThingsret',
                             load_fn = doThings_load
                             )
 
+def sayString_load(leaf):
+    print("saying things")
+    ret = SayStringRequest()
+    ret.things_to_say = data_management.get_value('doThingsret').say
+    print(ret.things_to_say)
+    return ret
+
 say_string = ActionLeaf("Say some text",
                             action_namespace='/action/say_string',
-                            save = False
+                            save = False,
+                            load_fn = sayString_load
                             )
 
 
@@ -138,7 +165,10 @@ def tree():
     BehaviourTree(
         "speech_move_manipulator",
         Sequence("Listen", [
-       # listen_leaf,            #Get some speech
+        recovery,
+        listen_leaf,            #Get some speech
+        Print(load_value="look_down",save=True),
+        MoveToNamedGripperPose(), #@Ben how do i fix this
         get_inference,
         get_image,
         get_rgb_info,
