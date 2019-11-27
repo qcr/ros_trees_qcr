@@ -12,7 +12,7 @@ from rv_trees.leaves_ros import ActionLeaf, SubscriberLeaf, ServiceLeaf, Publish
 from sensor_msgs.msg import Image, CameraInfo
 
 from rv_tasks.leaves.console import Print, SelectItem
-from  rv_msgs.msg import ListenGoal, ListenResult, GraspObjectGoal, GraspObjectResult, Objects
+from  rv_msgs.msg import ListenGoal, ListenResult, GraspObjectGoal, GraspObjectResult, Objects, Detection
 from  rv_msgs.srv import ParseIntentRequest, FindObjectsRequest
 from panda_speech.srv import DoActionRequest
 import rospy
@@ -21,7 +21,7 @@ import rospy
 
 def default_intent(leaf):
     print("using default intent")
-    ret = ParseIntentRequest(input_text='can you see the cup') #Comment out once debugging done
+    ret = ParseIntentRequest(input_text='can you move the cup') #Comment out once debugging done
     #ret = leaf._default_load_fn()   #Uncoment once debbugging done
     ret.intent_type = 'panda'
     print(ret)
@@ -88,6 +88,8 @@ def setObject(leaf):
   objects.depth_image=data_management.get_value('depth_image')
   objects.depth_info=data_management.get_value('depth_info')
   ret.objects=objects
+  detection=Detection()
+  detection.x_left=1
   return ret
 
 grasp_leaf = ActionLeaf("Grasp",
