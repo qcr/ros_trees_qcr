@@ -12,7 +12,7 @@ from rv_trees.leaves_ros import ActionLeaf, SubscriberLeaf, ServiceLeaf, Publish
 from sensor_msgs.msg import Image, CameraInfo
 
 from rv_tasks.leaves.console import Print, SelectItem
-from  rv_msgs.msg import ListenGoal, ListenResult, GraspObjectGoal, GraspObjectResult, Objects, Detection
+from  rv_msgs.msg import ListenGoal, ListenResult, GraspObjectGoal, GraspObjectResult, Objects, Detection, ActuateGripperGoal
 from  rv_msgs.srv import ParseIntentRequest, FindObjectsRequest
 from rv_tasks.leaves.manipulation import GetNamedGripperPoses, MoveToNamedGripperPose
 from panda_speech.srv import DoActionRequest, SayStringRequest
@@ -44,7 +44,7 @@ listen_leaf = ActionLeaf("Listen",
 
 #Lets declare a subscriber leaf to grab an image
 get_image = SubscriberLeaf("Get Image",
-                                topic_name='/camera/color/image_raw',
+                                topic_name='/camera/color/image_rect_color',
                                 topic_class=Image,
                                 save = True,
                                 expiry_time = 10.0 #TODO this wasn't working without exp time. Confirm fixed
@@ -60,7 +60,7 @@ get_rgb_info = SubscriberLeaf("Get RGB Info",
 
 #
 get_depth_info = SubscriberLeaf("Get Depth Info",
-                                topic_name='/camera/depth/camera_info',
+                                topic_name='/camera/aligned_depth_to_color/camera_info',
                                 topic_class=CameraInfo,
                                 save = True,
                                 save_key = 'depth_info',
@@ -150,22 +150,28 @@ do_things =  ServiceLeaf("Get instructions on what to do",
 def sayString_load(leaf):
     print("saying things")
     ret = SayStringRequest()
-    ret.things_to_say = data_management.get_value('doThingsret').say
-    print(ret.things_to_say)
+    ret.output_text = data_management.get_value('doThingsret').say
+    print(ret.output_text)
     return ret
 
 say_string = ActionLeaf("Say some text",
                             action_namespace='/action/say_string',
-                            save = False,
-                            load_fn = sayString_load
+                            save = True,
+                            load_value="yes i can see"
                             )
 
+open_gripper = ActionLeaf("Open gripper",
+                            action_namespace='/arm/gripper',
+                            save = False,
+                            load_value=ActuateGripperGoal(mode=0, width=0.07)
+                            )
 
 def tree():
     BehaviourTree(
         "speech_move_manipulator",
         Sequence("Listen", [
         recovery,
+        open_gripper,
         listen_leaf,            #Get some speech
         Print(load_value="look_down",save=True),
         MoveToNamedGripperPose(), #@Ben how do i fix this
@@ -180,7 +186,14 @@ def tree():
         do_things,
         say_string,
         grasp_leaf,
+        Print(load_value="look_down",save=True),
+        MoveToNamedGripperPose(),
+        Print(load_value="bin",save=True),
+        MoveToNamedGripperPose(),
+        open_gripper,
         #Print(),                    
+        Print(load_value="look_down",save=True),
+        MoveToNamedGripperPose(), #@Ben how do i fix this
         ])).run(hz=30, push_to_start=True, log_level='WARN')
 
 
