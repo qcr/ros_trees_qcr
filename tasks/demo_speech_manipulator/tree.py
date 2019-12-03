@@ -156,8 +156,9 @@ def sayString_load(leaf):
 
 say_string = ActionLeaf("Say some text",
                             action_namespace='/action/say_string',
-                            save = True,
-                            load_value="yes i can see"
+                            save = False,
+                            # load_value="yes i can see"
+                            load_fn=sayString_load
                             )
 
 open_gripper = ActionLeaf("Open gripper",
