@@ -21,17 +21,10 @@ class GetNamedGripperPoses(ServiceLeaf):
 
 class MoveToNamedGripperPose(ActionLeaf):
     # TODO This should go away if the magic is setup properly
-    def _load_fn(leaf):
-        ret = MoveToNamedPoseGoal()
-        ret.pose_name = data_management.get_last_value()  
-        ret.speed = 0.2
-        return ret
-
-    def __init__(self, *args, **kwargs):
+    def __init__(self, action_namespace='/arm/cartesian/named_pose', *args, **kwargs):
         super(MoveToNamedGripperPose,
               self).__init__("Move gripper to named pose",
-                             action_namespace='/arm/cartesian/named_pose',
-                             load_fn=self._load_fn,
+                             action_namespace=action_namespace,
                              *args,
                              **kwargs)
 
