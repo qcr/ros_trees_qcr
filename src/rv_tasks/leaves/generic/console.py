@@ -7,7 +7,6 @@ except NameError:
 
 
 class Print(Leaf):
-
     def __init__(self, *args, **kwargs):
         super(Print, self).__init__("Print",
                                     result_fn=self._result_fn,

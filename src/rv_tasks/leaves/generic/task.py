@@ -1,18 +1,6 @@
 
-from py_trees.composites import Selector
 from rv_trees.leaves_ros import SubscriberLeaf
-
 from std_msgs.msg import String
-
-class Task(Selector):
-  def __init__(self, task_name='', child=None):
-    super(Task, self).__init__(
-      name=task_name if task_name else 'fallback',
-      children=[
-        Inverter(IsTaskSelected(task_name=task_name)),
-        child
-      ]
-    )
 
 class IsTaskSelected(SubscriberLeaf):
   def __init__(self, task_name, topic_name='/task', topic_class=String, *args, **kwargs):
