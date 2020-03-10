@@ -1,5 +1,6 @@
 
 from rv_trees.leaves_ros import ActionLeaf, ServiceLeaf
+from rv_msgs.msg import MoveToJointPoseGoal
 
 class GetNamedGripperPoses(ServiceLeaf):
     def __init__(self, *args, **kwargs):
@@ -35,3 +36,19 @@ class Servo(ActionLeaf):
                             action_namespace=action_namespace,
                             *args,
                             **kwargs)
+
+class MoveJointsToPose(ActionLeaf):
+    # TODO This should go away if the magic is setup properly
+    def __init__(self, action_namespace='/arm/joint/pose', *args, **kwargs):
+        super(MoveJointsToPose,
+              self).__init__("Move joints to pose",
+                             action_namespace=action_namespace,
+                             load_fn=self.load_fn,
+                             *args,
+                             **kwargs)
+
+    def load_fn(self):
+      data = self._default_load_fn(auto_generate=False)
+      if type(data) == MoveToJointPoseGoal:
+        return data
+      return MoveToJointPoseGoal(joints=data)

@@ -35,10 +35,32 @@ class IsContacting(SubscriberLeaf):
       self.tau_J = self._cached_data.tau_J
       return None
     
-    error = math.fabs(self.tau_J[2] - self._cached_data.tau_J[2]) #[math.fabs(self.tau_J[idx] - self._cached_data.tau_J[idx]) for idx in range(len(self.tau_J))]
+    error = math.fabs(self.tau_J[2] - self._cached_data.tau_J[2])
     
     if error > 0.2:
       self.tau_J = None
       return True
     
     return False
+
+class GetEEPose(SubscriberLeaf):
+  def __init__(self, name='Get EE Pose', topic_name='/arm/state', topic_class=ManipulatorState, result_fn=None, *args, **kwargs):
+    super(GetEEPose, self).__init__(
+      name=name,
+      topic_name=topic_name,
+      topic_class=topic_class,
+      result_fn=lambda leaf: leaf._cached_data.ee_pose,
+      *args,
+      **kwargs
+    )
+
+class GetJointPoses(SubscriberLeaf):
+  def __init__(self, name='Get EE Pose', topic_name='/arm/state', topic_class=ManipulatorState, result_fn=None, *args, **kwargs):
+    super(GetJointPoses, self).__init__(
+      name=name,
+      topic_name=topic_name,
+      topic_class=topic_class,
+      result_fn=lambda leaf: leaf._cached_data.joint_poses,
+      *args,
+      **kwargs
+    )

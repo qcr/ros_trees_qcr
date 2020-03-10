@@ -68,7 +68,7 @@ class VisualiseObservation(PublisherLeaf):
     return self.create_image(image)
 
   def create_image(self, image):
-    return self.bridge.cv2_to_imgmsg(image, encoding='passthrough')
+    return self.bridge.cv2_to_imgmsg(image, encoding='rgb8')
     
   def colorize(self, word):
     # https://medium.com/apollo-data-solutions-blog/mapping-words-to-colors-cfa23a65d8c4

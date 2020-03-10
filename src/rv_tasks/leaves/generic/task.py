@@ -1,4 +1,3 @@
-
 from rv_trees.leaves_ros import SubscriberLeaf
 from std_msgs.msg import String
 
@@ -8,7 +7,8 @@ class IsTaskSelected(SubscriberLeaf):
           self).__init__('Task Selected'.format(task_name),
                           topic_name=topic_name, 
                           topic_class=topic_class,
-                          eval_fn=self.eval_fn, 
+                          eval_fn=self.eval_fn,
+                          timeout=0.001,
                           *args, 
                           **kwargs)
     self.task_name = task_name

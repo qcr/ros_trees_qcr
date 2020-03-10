@@ -1,5 +1,15 @@
 from rv_trees.leaves_ros import ServiceLeaf
 
+class GetFaces(ServiceLeaf):
+  def __init__(self, name='Get face pose', service_name='/service/face_tracking', *args, **kwargs):
+    super(GetFaces, self).__init__(
+      name=name,
+      service_name=service_name,
+      save_fn=lambda leaf, value: self._default_save_fn(value.result if hasattr(value, 'result') else None),
+      *args, 
+      **kwargs
+    )
+
 class GetGraspPose(ServiceLeaf):
   def __init__(self, name='Get grasp pose', service_name='/service/ggcnn', *args, **kwargs):
     super(GetGraspPose, self).__init__(
