@@ -1,4 +1,5 @@
 from rv_trees.leaves_ros import SyncedSubscriberLeaf
+from rv_trees.leaves import Leaf
 
 from rv_msgs.msg import Observation
 from sensor_msgs.msg import Image, CameraInfo
@@ -26,4 +27,16 @@ class GetObservation(SyncedSubscriberLeaf):
       *args,
       **kwargs
     )
+
+
+class SortObservation(Leaf):
+  def __init__(self, name='Sort', sort_fn=None, *args, **kwargs):
+    super(SortObservation, self).__init__(name, result_fn=self.result_fn, *args, **kwargs)
+    self.sort_fn = sort_fn if sort_fn else lambda a, b: 1 if a.class_label > b.class_label else -1
+
+  def result_fn(self):
+    self.loaded_data.detections = sorted(
+      self.loaded_data.detections, self.sort_fn
+    )
+    return self.loaded_data
 

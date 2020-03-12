@@ -4,7 +4,7 @@ from rv_trees.leaves import Leaf
 
 class Noop(Leaf):
   def __init__(self, name="NOOP", *args, **kwargs):
-    super(Pass, self).__init__(name, eval_fn=lambda leaf, value: True, *args, **kwargs)
+    super(Noop, self).__init__(name, eval_fn=lambda leaf, value: True, *args, **kwargs)
 
 class Wait(Leaf):
   def __init__(self, name='Wait', *args, **kwargs):
