@@ -1,3 +1,4 @@
+from . import audio
 from . import console
 from . import noop
 from . import pose

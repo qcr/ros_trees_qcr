@@ -22,12 +22,19 @@ class MoveToNamedGripperPose(ActionLeaf):
 
 class MoveGripperToPose(ActionLeaf):
     # TODO This should go away if the magic is setup properly
-    def __init__(self, action_namespace='/arm/cartesian/pose', *args, **kwargs):
+    def __init__(self, action_namespace='/arm/cartesian/pose', speed=0.3, *args, **kwargs):
         super(MoveGripperToPose,
               self).__init__("Move gripper to pose",
                              action_namespace=action_namespace,
+                             load_fn=self.load_fn,
                              *args,
                              **kwargs)
+        self.speed = speed
+
+    def load_fn(self):
+      goal = self._default_load_fn()
+      goal.speed = self.speed
+      return goal
 
 class Servo(ActionLeaf):
   def __init__(self, action_namespace='/arm/cartesian/servo_pose', *args, **kwargs):
