@@ -1,3 +1,3 @@
-from . import manipulation
+from . import generic
 
-__all__ = ['manipulation']
+__all__ = ['generic']
