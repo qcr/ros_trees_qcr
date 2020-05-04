@@ -92,7 +92,7 @@ Below are some conventions & best practices we encourage everyone to use. This p
 
 - Use existing leaves and branches where possible (maximising reuse promotes greater consistency & robustness of our systems)
 - A leaf should be as input-agnostic as possible (e.g. writing a leaf to only work with a 3x1 numpy array of Float64s when in reality it could work with any iterable of 3 numbers only hinders future use of your leaf)
-- If you want your leaf or branch to be used by people, include it in the appropriate section of `rv_tasks.common_leaves.*` or `rv_tasks.common_branches.*`
+- If you want your leaf or branch to be used by people, include it in the appropriate section of `rv_leaves.common_leaves.*` or `rv_leaves.common_branches.*`
 - Extend functionality in your own class rather than messing with the base `Leaf` classes (including )
 
 
@@ -282,7 +282,7 @@ class PopFromList(Leaf):
         return item
 ```
 
-`PrintObjects` prints from `loaded_data` (which is guarantee to be loaded for `result_fn` implementations), and `PopFromList` uses a new `pop_position` parameter to pop from a list (which is assumed to be available). We now have all the leaves needed to complete this task, and while this may have seemed a long process, remember that we have done this from scratch with no shared leaves available. In practice, most leaves will simply be a `import rv_tasks.leaves.<leaf_type>` call away!
+`PrintObjects` prints from `loaded_data` (which is guarantee to be loaded for `result_fn` implementations), and `PopFromList` uses a new `pop_position` parameter to pop from a list (which is assumed to be available). We now have all the leaves needed to complete this task, and while this may have seemed a long process, remember that we have done this from scratch with no shared leaves available. In practice, most leaves will simply be a `import rv_leaves.leaves.<leaf_type>` call away!
 
 ### Part 2: Using branches to create re-usable behaviours from leaves (writing sub-behaviours)
 

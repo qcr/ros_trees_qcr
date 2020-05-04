@@ -6,8 +6,8 @@ import sys
 import time
 import rospy
 
-from rv_tasks.leaves.console import Print, SelectItem
-from rv_tasks.leaves.manipulation import GetNamedGripperPoses, MoveToNamedGripperPose
+from rv_leaves.leaves.console import Print, SelectItem
+from rv_leaves.leaves.manipulation import GetNamedGripperPoses, MoveToNamedGripperPose
 
 
 def tree():

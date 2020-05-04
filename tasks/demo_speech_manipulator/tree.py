@@ -11,10 +11,10 @@ import time
 from rv_trees.leaves_ros import ActionLeaf, SubscriberLeaf, ServiceLeaf, PublisherLeaf
 from sensor_msgs.msg import Image, CameraInfo
 
-from rv_tasks.leaves.console import Print, SelectItem
+from rv_leaves.leaves.console import Print, SelectItem
 from  rv_msgs.msg import ListenGoal, ListenResult, GraspObjectGoal, GraspObjectResult, Objects, Detection, ActuateGripperGoal
 from  rv_msgs.srv import ParseIntentRequest, FindObjectsRequest
-from rv_tasks.leaves.manipulation import GetNamedGripperPoses, MoveToNamedGripperPose
+from rv_leaves.leaves.manipulation import GetNamedGripperPoses, MoveToNamedGripperPose
 from panda_speech.srv import DoActionRequest, SayStringRequest
 import rospy
 import cv2
