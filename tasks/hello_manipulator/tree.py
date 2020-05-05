@@ -4,49 +4,25 @@ from rv_trees.leaves import Leaf
 from rv_trees.trees import BehaviourTree
 import sys
 import time
+import rospy
 
-from rv_tasks.leaves.console import Print, SelectItem
-
-
-class GetNamedGripperPoses(Leaf):
-    # TODO replace with proper service call (& move into leaves library)
-    NAMED_POSES = ["look_up", "look_down", "look_left", "look_right", "home"]
-
-    def __init__(self, *args, **kwargs):
-        super(GetNamedGripperPoses,
-              self).__init__("Get named gripper poses",
-                             load_value=GetNamedGripperPoses.NAMED_POSES,
-                             save=True,
-                             *args,
-                             **kwargs)
-
-
-class MoveToNamedGripperPose(Leaf):
-    # TODO replace with proper action server call (& move into leaves library)
-
-    def __init__(self, *args, **kwargs):
-        super(MoveToNamedGripperPose,
-              self).__init__("Move gripper to named pose",
-                             result_fn=self._result_fn,
-                             *args,
-                             **kwargs)
-
-    def _result_fn(self):
-        # NOTE this is a dirty blocking hack to show some sort of execution
-        # delay. When doing this properly you would be calling an action server
-        print("Moving to named gripper pose '%s' ... " % self.loaded_data,
-              end='')
-        sys.stdout.flush()
-        time.sleep(5)
-        print("Done.")
-        return True
+from rv_leaves.leaves.console import Print, SelectItem
+from rv_leaves.leaves.manipulation import GetNamedGripperPoses, MoveToNamedGripperPose
 
 
 def tree():
-    return BehaviourTree(
+    BehaviourTree(
         "Hello Manipulator",
         Sequence("Hello manipulator", [
             GetNamedGripperPoses(),
+            Print(),
+            Leaf("List from Message",
+                 result_fn=lambda x: x.loaded_data.names_list,
+                 save=True),
             SelectItem(select_text="Pick a pose"),
             MoveToNamedGripperPose()
-        ]))
+        ])).run(hz=30, push_to_start=True, log_level='WARN')
+
+if __name__ == '__main__':
+    rospy.init_node("tree_hello_manipulator")
+    tree()
