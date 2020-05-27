@@ -3,9 +3,9 @@ from rv_trees.leaves_ros import ActionLeaf
 from rv_msgs.msg import ActuateGripperGoal
 
 class Grasp(ActionLeaf):
-  def __init__(self, action_namespace='/arm/gripper', speed=0, force=0, *args, **kwargs):
+  def __init__(self, name=None, action_namespace='/arm/gripper', speed=0, force=0, *args, **kwargs):
       super(Grasp,
-            self).__init__("Grasp object",
+            self).__init__(name if name else 'Grasp object',
                             action_namespace=action_namespace,
                             load_fn=self.load_fn,
                             *args,
@@ -27,9 +27,9 @@ class Grasp(ActionLeaf):
     return grasp_goal
 
 class ActuateGripper(ActionLeaf):
-  def __init__(self, action_namespace='/arm/gripper', *args, **kwargs):
+  def __init__(self, name=None, action_namespace='/arm/gripper', *args, **kwargs):
       super(ActuateGripper,
-            self).__init__("Open Gripper",
+            self).__init__(name if name else 'Open Gripper',
                             action_namespace=action_namespace,
                             load_fn=self.load_fn,
                             *args,

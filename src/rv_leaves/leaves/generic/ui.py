@@ -5,9 +5,9 @@ import rv_trees.data_management as dm
 from py_trees.composites import Sequence
 from rv_trees.leaves import Leaf
 from rv_trees.leaves_ros import SubscriberLeaf
-from manipulation_capstone.msg import Click
 
 from sensor_msgs.msg import Image
+from rv_msgs.msg import Click
 from rv_msgs.msg import Detection
 
 class GetClick(SubscriberLeaf):
