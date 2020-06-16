@@ -11,6 +11,28 @@ class GetNamedGripperPoses(ServiceLeaf):
                              *args,
                              **kwargs)
 
+class GetTaggedLocations(ServiceLeaf):
+    def __init__(self, *args, **kwargs):
+        super(GetTaggedLocations,
+              self).__init__("Get Tagged Locations",
+                             service_name='/location_server/get_locations',
+                             save=True,
+                             *args,
+                             **kwargs)
+
+class GetTaggedLocationPose(ServiceLeaf):
+    def __init__(self, *args, **kwargs):
+        super(GetTaggedLocationPose,
+              self).__init__("Get Tagged Location Pose",
+                             service_name='/location_server/get_location',
+                             save=True,
+                             result_fn=self.result_fn,
+                             *args,
+                             **kwargs)
+
+    def result_fn(self):
+      result = self._default_result_fn()
+      return result.pose_stamped
 
 class MoveToNamedGripperPose(ActionLeaf):
     def __init__(self, action_namespace='/arm/cartesian/named_pose', *args, **kwargs):
@@ -36,10 +58,10 @@ class MoveGripperToPose(ActionLeaf):
       goal.speed = self.speed
       return goal
 
-class Servo(ActionLeaf):
+class ServoGripperToPose(ActionLeaf):
   def __init__(self, action_namespace='/arm/cartesian/servo_pose', *args, **kwargs):
-      super(Servo,
-            self).__init__("Servo",
+      super(ServoGripperToPose,
+            self).__init__("Servo gripper to pose",
                             action_namespace=action_namespace,
                             *args,
                             **kwargs)

@@ -6,7 +6,7 @@ from rv_trees.leaves import Leaf
 from rv_leaves.leaves.generic.console import Print
 from rv_leaves.leaves.generic.pose import TranslatePose
 from rv_leaves.leaves.manipulation.grasping import ActuateGripper, Grasp
-from rv_leaves.leaves.manipulation.motion import MoveToNamedGripperPose, MoveGripperToPose, Servo
+from rv_leaves.leaves.manipulation.motion import MoveToNamedGripperPose, MoveGripperToPose, ServoGripperToPose
 from rv_leaves.leaves.manipulation.status import GetEEPose
 
 class GraspFromObservation(Sequence):
@@ -32,7 +32,7 @@ class GraspFromObservation(Sequence):
           MoveGripperToPose(load_key='grasp_pose'),
           TranslatePose(z=-0.1, load_key='grasp_pose'),
           Print(load_key='grasp_pose'),
-          Servo(load_key='grasp_pose'),
+          ServoGripperToPose(load_key='grasp_pose'),
           Grasp(),
           MoveToNamedGripperPose(load_value='ready')
         ])
