@@ -1,11 +1,13 @@
 
-from rv_trees.leaves_ros import ActionLeaf
+from rv_trees.leaves_ros import ActionLeaf, SubscriberLeaf
 from rv_msgs.msg import ActuateGripperGoal
 
+from sensor_msgs.msg import JointState
+
 class Grasp(ActionLeaf):
-  def __init__(self, action_namespace='/arm/gripper', speed=0, force=0, *args, **kwargs):
+  def __init__(self, name=None, action_namespace='/arm/gripper', speed=0, force=0, *args, **kwargs):
       super(Grasp,
-            self).__init__("Grasp object",
+            self).__init__(name if name else 'Grasp object',
                             action_namespace=action_namespace,
                             load_fn=self.load_fn,
                             *args,
@@ -27,9 +29,9 @@ class Grasp(ActionLeaf):
     return grasp_goal
 
 class ActuateGripper(ActionLeaf):
-  def __init__(self, action_namespace='/arm/gripper', *args, **kwargs):
+  def __init__(self, name=None, action_namespace='/arm/gripper', *args, **kwargs):
       super(ActuateGripper,
-            self).__init__("Open Gripper",
+            self).__init__(name if name else 'Open Gripper',
                             action_namespace=action_namespace,
                             load_fn=self.load_fn,
                             *args,
@@ -44,3 +46,17 @@ class ActuateGripper(ActionLeaf):
     grasp_goal.e_outer = 0.0
 
     return grasp_goal
+
+class IsGripperOpen(SubscriberLeaf):
+  def __init__(self, name=None, topic_name='/franka_gripper/joint_states', topic_class=JointState, save=False, *args, **kwargs):
+    super(IsGripperOpen, self).__init__(
+      name=name if name else 'IsGripperOpen',
+      topic_name=topic_name,
+      topic_class=topic_class,
+      save=save, 
+      eval_fn=self.eval_fn,
+      *args,
+      **kwargs)
+
+  def eval_fn(self, value):
+    return value.position[0] > 0.035 and value.position[1] > 0.035

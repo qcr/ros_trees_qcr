@@ -44,9 +44,9 @@ class MoveToNamedGripperPose(ActionLeaf):
 
 class MoveGripperToPose(ActionLeaf):
     # TODO This should go away if the magic is setup properly
-    def __init__(self, action_namespace='/arm/cartesian/pose', speed=0.3, *args, **kwargs):
+    def __init__(self, name=None, action_namespace='/arm/cartesian/pose', speed=0.3, *args, **kwargs):
         super(MoveGripperToPose,
-              self).__init__("Move gripper to pose",
+              self).__init__(name if name else 'Move gripper to pose',
                              action_namespace=action_namespace,
                              load_fn=self.load_fn,
                              *args,
