@@ -31,8 +31,11 @@ class GetTaggedLocationPose(ServiceLeaf):
                              **kwargs)
 
     def result_fn(self):
-      result = self._default_result_fn()
-      return result.pose_stamped
+      try:
+        result = self._default_result_fn()
+        return result.pose_stamped
+      except:
+        return False
 
 class MoveToNamedGripperPose(ActionLeaf):
     def __init__(self, action_namespace='/arm/cartesian/named_pose', *args, **kwargs):
@@ -81,3 +84,4 @@ class MoveJointsToPose(ActionLeaf):
       if type(data) == MoveToJointPoseGoal:
         return data
       return MoveToJointPoseGoal(joints=data)
+      

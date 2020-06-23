@@ -30,7 +30,8 @@ class VisualiseObservation(PublisherLeaf):
     observation = self._default_load_fn(auto_generate=False)
     
     image = self.bridge.imgmsg_to_cv2(observation.rgb_image, desired_encoding='passthrough')
-
+    image = image.copy()
+    
     for detection in observation.detections:
       color = self.colorize(detection.class_label)
       

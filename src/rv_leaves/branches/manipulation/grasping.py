@@ -1,7 +1,8 @@
 import copy
 
 import rv_trees.data_management as dm
-from py_trees.composites import Sequence
+from py_trees.composites import Sequence, Selector
+from rv_trees.leaves_ros import ServiceLeaf
 from rv_trees.leaves import Leaf
 from rv_leaves.leaves.generic.console import Print
 from rv_leaves.leaves.generic.pose import TranslatePose
@@ -30,11 +31,12 @@ class GraspFromObservation(Sequence):
           ActuateGripper(load_key="grasp_width"),
           TranslatePose(z=0.1, load_key='grasp_pose'),
           MoveGripperToPose(load_key='grasp_pose'),
-          TranslatePose(z=-0.1, load_key='grasp_pose'),
-          Print(load_key='grasp_pose'),
-          ServoGripperToPose(load_key='grasp_pose'),
+          TranslatePose(z=-0.12, load_key='grasp_pose'),
+          MoveGripperToPose(load_key='grasp_pose', speed=0.02),
+          ServiceLeaf('Recover', '/arm/recover', save=False),
           Grasp(),
-          MoveToNamedGripperPose(load_value='ready')
+          TranslatePose(z=0.4, load_key='grasp_pose'),
+          MoveGripperToPose(load_key='grasp_pose'),
         ])
       ]
     )

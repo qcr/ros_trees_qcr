@@ -1,19 +1,33 @@
+import rospy
+import math
 
-from rv_trees.leaves_ros import SubscriberLeaf
+from rv_trees.leaves_ros import SubscriberLeaf, ServiceLeaf
 
 from rv_msgs.msg import ManipulatorState
 from franka_msgs.msg import FrankaState
 
 class IsErrored(SubscriberLeaf):
-  def __init__(self, name='Checking arm for errors', topic_name='/arm/state', topic_class=ManipulatorState, result_fn=None, *args, **kwargs):
+  def __init__(self, name='Checking arm for errors', timeout=2, topic_name='/arm/state', topic_class=ManipulatorState, result_fn=None, *args, **kwargs):
     super(IsErrored, self).__init__(
       name=name,
       topic_name=topic_name,
       topic_class=topic_class,
-      result_fn=result_fn if result_fn else lambda leaf: leaf._cached_data.errors > 0,
+      result_fn=result_fn if result_fn else self.result_fn,
       *args,
       **kwargs
     )
+    self.timeout = timeout
+    self.ts = None
+
+  def result_fn(self):
+    if self._cached_data.errors > 0:
+      if self.ts == None:
+        self.ts = rospy.get_time()
+      
+      return rospy.get_time() - self.ts > self.timeout
+    
+    self.ts = None
+    return False
 
 class IsContacting(SubscriberLeaf):
   def __init__(self, name='Checking arm for errors', topic_name='/franka_state_controller/franka_states', topic_class=FrankaState, result_fn=None, *args, **kwargs):
@@ -64,3 +78,11 @@ class GetJointPoses(SubscriberLeaf):
       *args,
       **kwargs
     )
+
+class SetCartesianImpedance(ServiceLeaf):
+    def __init__(self, name='Set Impedance', *args, **kwargs):
+        super(SetCartesianImpedance,
+              self).__init__(name=name,
+                             service_name='/arm/set_cartesian_impedance',
+                             *args,
+                             **kwargs)
