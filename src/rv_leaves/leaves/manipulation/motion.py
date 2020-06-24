@@ -1,6 +1,7 @@
 
 from rv_trees.leaves_ros import ActionLeaf, ServiceLeaf
 from rv_msgs.msg import MoveToJointPoseGoal
+from actionlib_msgs.msg import GoalStatus
 
 class GetNamedGripperPoses(ServiceLeaf):
     def __init__(self, *args, **kwargs):
@@ -84,4 +85,18 @@ class MoveJointsToPose(ActionLeaf):
       if type(data) == MoveToJointPoseGoal:
         return data
       return MoveToJointPoseGoal(joints=data)
+
+class RotateHandle(ActionLeaf):
+    def __init__(self, action_namespace='/action/turn_handle', *args, **kwargs):
+        super(RotateHandle,
+              self).__init__("Rotate handle",
+                             action_namespace=action_namespace,
+                             eval_fn=self.eval_fn,
+                             *args,
+                             **kwargs)
+    
+    def eval_fn(self, value):
+      print(value)
+      return self._action_client.get_state() == GoalStatus.SUCCEEDED and value.result == 0
+
       

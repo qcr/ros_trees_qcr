@@ -20,6 +20,10 @@ class IsErrored(SubscriberLeaf):
     self.ts = None
 
   def result_fn(self):
+    if self._cached_data.errors & ManipulatorState.ESTOP == ManipulatorState.ESTOP:
+      self.ts = None
+      return True
+    
     if self._cached_data.errors > 0:
       if self.ts == None:
         self.ts = rospy.get_time()
@@ -30,8 +34,22 @@ class IsErrored(SubscriberLeaf):
     return False
 
 class IsContacting(SubscriberLeaf):
-  def __init__(self, name='Checking arm for errors', topic_name='/franka_state_controller/franka_states', topic_class=FrankaState, result_fn=None, *args, **kwargs):
+  def __init__(self, name='Is Contacting', topic_name='/arm/state', topic_class=ManipulatorState, result_fn=None, *args, **kwargs):
     super(IsContacting, self).__init__(
+      name=name,
+      topic_name=topic_name,
+      topic_class=topic_class,
+      result_fn=result_fn if result_fn else self.result_fn,
+      *args,
+      **kwargs
+    )
+    
+  def result_fn(self):
+    return any(self._cached_data.cartesian_contact)
+
+class IsItemGrabbed(SubscriberLeaf):
+  def __init__(self, name='item Grabbed', topic_name='/franka_state_controller/franka_states', topic_class=FrankaState, result_fn=None, *args, **kwargs):
+    super(IsItemGrabbed, self).__init__(
       name=name,
       topic_name=topic_name,
       topic_class=topic_class,
@@ -40,6 +58,7 @@ class IsContacting(SubscriberLeaf):
       **kwargs
     )
     self.tau_J = None
+    self.ticks = 0
 
   def result_fn(self):
     if not self._cached_data:
@@ -49,12 +68,19 @@ class IsContacting(SubscriberLeaf):
       self.tau_J = self._cached_data.tau_J
       return None
     
-    error = math.fabs(self.tau_J[2] - self._cached_data.tau_J[2])
-    
-    if error > 0.2:
-      self.tau_J = None
-      return True
-    
+    error = self._cached_data.tau_J[2] - self.tau_J[2]
+    print('{}: {}'.format(self.ticks, error))
+    if error > 0.35:
+      self.ticks += 1
+
+      if self.ticks >= 2:
+        self.tau_J = None
+        self.ticks = 0
+        return True
+
+      return False
+
+    self.ticks = 0    
     return False
 
 class GetEEPose(SubscriberLeaf):

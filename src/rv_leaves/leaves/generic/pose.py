@@ -8,8 +8,13 @@ from rv_trees.leaves import Leaf
 from geometry_msgs.msg import Quaternion
 
 class TranslatePose(Leaf):
-  def __init__(self, name="Translate Pose", x=0, y=0, z=0, rx=0, ry=0, rz=0, *args, **kwargs):
-    super(TranslatePose, self).__init__(name, result_fn=self.result_fn, *args, **kwargs)
+  def __init__(self, name="Translate Pose", x=0, y=0, z=0, rx=0, ry=0, rz=0, height_fn=None, *args, **kwargs):
+    super(TranslatePose, self).__init__(
+      name,
+      result_fn=self.result_fn,
+      *args,
+      **kwargs
+    )
     self.x = x
     self.y = y
     self.z = z
@@ -18,12 +23,18 @@ class TranslatePose(Leaf):
     self.ry = ry
     self.rz = rz
 
+    self.height_fn = (self.default_height_fn if height_fn is None else 
+                      self._ensure_bound(height_fn))
+
+  def default_height_fn(self):
+    return self.z
+
   def result_fn(self):
     result = self._default_result_fn()
     
     result.pose.position.x += self.x
     result.pose.position.y += self.y
-    result.pose.position.z += self.z
+    result.pose.position.z += self.height_fn()
 
     current = self.quaternion_to_list(result.pose.orientation)
     rotation = quaternion_from_euler(self.rx, self.ry, self.rz)

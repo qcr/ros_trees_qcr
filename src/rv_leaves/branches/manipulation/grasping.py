@@ -1,14 +1,15 @@
 import copy
-
+import py_trees
 import rv_trees.data_management as dm
-from py_trees.composites import Sequence, Selector
+from py_trees.composites import Sequence, Selector, Parallel
+from py_trees.decorators import FailureIsRunning, Inverter
 from rv_trees.leaves_ros import ServiceLeaf
 from rv_trees.leaves import Leaf
 from rv_leaves.leaves.generic.console import Print
 from rv_leaves.leaves.generic.pose import TranslatePose
-from rv_leaves.leaves.manipulation.grasping import ActuateGripper, Grasp
+from rv_leaves.leaves.manipulation.grasping import ActuateGripper, Grasp, IsGripperClosed
 from rv_leaves.leaves.manipulation.motion import MoveToNamedGripperPose, MoveGripperToPose, ServoGripperToPose
-from rv_leaves.leaves.manipulation.status import GetEEPose
+from rv_leaves.leaves.manipulation.status import GetEEPose, IsContacting
 
 class GraspFromObservation(Sequence):
   def __init__(self, gripper_width=None, *args, **kwargs):
@@ -31,12 +32,19 @@ class GraspFromObservation(Sequence):
           ActuateGripper(load_key="grasp_width"),
           TranslatePose(z=0.1, load_key='grasp_pose'),
           MoveGripperToPose(load_key='grasp_pose'),
-          TranslatePose(z=-0.12, load_key='grasp_pose'),
-          MoveGripperToPose(load_key='grasp_pose', speed=0.02),
+          TranslatePose(z=-0.11, load_key='grasp_pose'),
+          Parallel(children=[
+            MoveGripperToPose(load_key='grasp_pose', speed=0.02),
+            FailureIsRunning(
+              IsContacting()
+            )
+          ], policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ONE),
           ServiceLeaf('Recover', '/arm/recover', save=False),
           Grasp(),
+          ServiceLeaf('Recover', '/arm/recover', save=False),
           TranslatePose(z=0.4, load_key='grasp_pose'),
           MoveGripperToPose(load_key='grasp_pose'),
+          Inverter(IsGripperClosed())
         ])
       ]
     )
