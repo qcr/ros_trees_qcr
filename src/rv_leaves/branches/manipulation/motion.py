@@ -13,7 +13,8 @@ class MoveAboveTaggedLocation(Sequence):
       TransformPose(target_frame='panda_link0', load_key='tag_pose', save_key='tag_pose'),
       TranslatePose(rx=math.pi, rz=math.pi/2, load_key='tag_pose', save_key='tag_pose'),
       TranslatePose(x=dx, y=dy, z=dz, height_fn=height_fn, load_key='tag_pose', save_key='tag_pose'),
+      VisualisePose(load_key='tag_pose'),
       MoveGripperToPose(speed=speed, load_key='tag_pose'),
       GetTaggedLocationPose(load_value=location if location else None, load_key=load_key if load_key else None, save_key='tag_pose'),
-      VisualisePose(load_key='tag_pose'),
+      # VisualisePose(load_key='tag_pose'),
     ])

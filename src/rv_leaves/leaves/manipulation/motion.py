@@ -38,6 +38,15 @@ class GetTaggedLocationPose(ServiceLeaf):
       except:
         return False
 
+class SetCartesianPlanningEnabled(ServiceLeaf):
+    def __init__(self, *args, **kwargs):
+        super(SetCartesianPlanningEnabled,
+              self).__init__("Set Cartesian Planning",
+                             service_name='/arm/set_cartesian_planning_enabled',
+                             save=False,
+                             *args,
+                             **kwargs)
+
 class MoveToNamedGripperPose(ActionLeaf):
     def __init__(self, action_namespace='/arm/cartesian/named_pose', *args, **kwargs):
         super(MoveToNamedGripperPose,

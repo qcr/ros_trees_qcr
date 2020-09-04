@@ -8,7 +8,7 @@ from rv_trees.leaves import Leaf
 from rv_leaves.leaves.generic.console import Print
 from rv_leaves.leaves.generic.pose import TranslatePose
 from rv_leaves.leaves.manipulation.grasping import ActuateGripper, Grasp, IsGripperClosed
-from rv_leaves.leaves.manipulation.motion import MoveToNamedGripperPose, MoveGripperToPose, ServoGripperToPose
+from rv_leaves.leaves.manipulation.motion import MoveToNamedGripperPose, MoveGripperToPose, ServoGripperToPose, SetCartesianPlanningEnabled
 from rv_leaves.leaves.manipulation.status import GetEEPose, IsContacting
 
 class GraspFromObservation(Sequence):
