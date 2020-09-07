@@ -35,9 +35,9 @@ class GraspFromObservation(Sequence):
           TranslatePose(z=-0.11, load_key='grasp_pose'),
           Parallel(children=[
             MoveGripperToPose(load_key='grasp_pose', speed=0.02),
-            FailureIsRunning(
-              IsContacting()
-            )
+            # FailureIsRunning(
+            #   IsContacting()
+            # )
           ], policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ONE),
           ServiceLeaf('Recover', '/arm/recover', save=False),
           Grasp(),

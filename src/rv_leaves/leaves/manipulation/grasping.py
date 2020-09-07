@@ -48,7 +48,7 @@ class ActuateGripper(ActionLeaf):
     return grasp_goal
 
 class IsGripperOpen(SubscriberLeaf):
-  def __init__(self, name=None, topic_name='/franka_gripper/joint_states', topic_class=JointState, save=False, eval_fn=None, *args, **kwargs):
+  def __init__(self, name=None, topic_name='/arm/gripper/state', topic_class=JointState, save=False, eval_fn=None, *args, **kwargs):
     super(IsGripperOpen, self).__init__(
       name=name if name else 'IsGripperOpen',
       topic_name=topic_name,
