@@ -62,6 +62,7 @@ class MoveGripperToPose(ActionLeaf):
               self).__init__(name if name else 'Move gripper to pose',
                              action_namespace=action_namespace,
                              load_fn=self.load_fn,
+                             eval_fn=self.eval_fn,
                              *args,
                              **kwargs)
         self.speed = speed
@@ -70,6 +71,10 @@ class MoveGripperToPose(ActionLeaf):
       goal = self._default_load_fn()
       goal.speed = self.speed
       return goal
+    
+    def eval_fn(self, result):
+      print(result)
+      return result.result == 0
 
 class ServoGripperToPose(ActionLeaf):
   def __init__(self, action_namespace='/arm/cartesian/servo_pose', *args, **kwargs):

@@ -2,7 +2,7 @@ import copy
 import py_trees
 import rv_trees.data_management as dm
 from py_trees.composites import Sequence, Selector, Parallel
-from py_trees.decorators import FailureIsRunning, Inverter
+from py_trees.decorators import FailureIsRunning, Inverter, FailureIsSuccess
 from rv_trees.leaves_ros import ServiceLeaf
 from rv_trees.leaves import Leaf
 from rv_leaves.leaves.generic.console import Print
@@ -13,7 +13,7 @@ from rv_leaves.leaves.manipulation.status import GetEEPose, IsContacting
 from rv_leaves.leaves.visualisation.pose import VisualisePose
 
 class GraspFromObservation(Sequence):
-  def __init__(self, gripper_width=None, *args, **kwargs):
+  def __init__(self, gripper_width=None, speed=0.1, *args, **kwargs):
     super(GraspFromObservation, self).__init__(
       'Grasp Object from Observation', children=[
         Leaf(
@@ -35,22 +35,22 @@ class GraspFromObservation(Sequence):
           ActuateGripper(load_key="grasp_width"),
           TranslatePose(z=0.1, load_key='grasp_pose'),
           VisualisePose(load_key='grasp_pose'),
-          MoveGripperToPose(load_key='grasp_pose'),
+          FailureIsRunning(MoveGripperToPose(load_key='grasp_pose', speed=speed)),
           TranslatePose(z=-0.1, load_key='grasp_pose'),
           VisualisePose(load_key='grasp_pose'),
         
           Parallel(children=[
-            MoveGripperToPose(load_key='grasp_pose', speed=0.02),
+            FailureIsRunning(MoveGripperToPose(load_key='grasp_pose', speed=speed)),
             # FailureIsRunning(
             #   IsContacting()
             # )
           ], policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ONE),
-          ServiceLeaf('Recover', '/arm/recover', save=False),
-          Grasp(),
-          ServiceLeaf('Recover', '/arm/recover', save=False),
+          # ServiceLeaf('Recover', '/arm/recover', save=False),
+          FailureIsSuccess(Grasp()),
+          # ServiceLeaf('Recover', '/arm/recover', save=False),
           TranslatePose(z=0.4, load_key='grasp_pose'),
-          MoveGripperToPose(load_key='grasp_pose'),
-          Inverter(IsGripperClosed())
+          FailureIsRunning(MoveGripperToPose(load_key='grasp_pose', speed=speed)),
+          # Inverter(IsGripperClosed())
         ])
       ]
     )
