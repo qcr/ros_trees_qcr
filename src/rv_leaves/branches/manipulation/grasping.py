@@ -10,6 +10,7 @@ from rv_leaves.leaves.generic.pose import TranslatePose
 from rv_leaves.leaves.manipulation.grasping import ActuateGripper, Grasp, IsGripperClosed
 from rv_leaves.leaves.manipulation.motion import MoveToNamedGripperPose, MoveGripperToPose, ServoGripperToPose, SetCartesianPlanningEnabled
 from rv_leaves.leaves.manipulation.status import GetEEPose, IsContacting
+from rv_leaves.leaves.visualisation.pose import VisualisePose
 
 class GraspFromObservation(Sequence):
   def __init__(self, gripper_width=None, *args, **kwargs):
@@ -27,12 +28,17 @@ class GraspFromObservation(Sequence):
             save_key='grasp_pose',
             result_fn=lambda leaf: leaf.loaded_data.detections[0].grasp_pose if len(leaf.loaded_data.detections) else None, 
         ),
+        Print(load_key='grasp_pose'),
+        VisualisePose(load_key='grasp_pose'),
         GetEEPose('Get EE Pose', save_key='ee_pose'),
         Sequence(name="Execute Grasp", children=[
           ActuateGripper(load_key="grasp_width"),
           TranslatePose(z=0.1, load_key='grasp_pose'),
+          VisualisePose(load_key='grasp_pose'),
           MoveGripperToPose(load_key='grasp_pose'),
-          TranslatePose(z=-0.11, load_key='grasp_pose'),
+          TranslatePose(z=-0.1, load_key='grasp_pose'),
+          VisualisePose(load_key='grasp_pose'),
+        
           Parallel(children=[
             MoveGripperToPose(load_key='grasp_pose', speed=0.02),
             # FailureIsRunning(
