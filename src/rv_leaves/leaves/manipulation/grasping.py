@@ -59,10 +59,10 @@ class IsGripperOpen(SubscriberLeaf):
       **kwargs)
 
   def eval_fn(self, value):
-    return value.position[0] > 0.035 and value.position[1] > 0.035
+    return value.position[0] < 0.01 and value.position[1] > 0.01
 
 class IsGripperClosed(IsGripperOpen):
-  def __init__(self, name='Is Grasping', *args, **kwargs):
+  def __init__(self, name='Is Gripper Closed', *args, **kwargs):
     super(IsGripperClosed, self).__init__(
       name=name,
       eval_fn=self.eval_fn,
@@ -71,6 +71,6 @@ class IsGripperClosed(IsGripperOpen):
     )
 
   def eval_fn(self, value):
-    return value.position[0] < 0.001 and value.position[1] < 0.001
+    return value.position[0] > 0.044 and value.position[1] > 0.044
 
   

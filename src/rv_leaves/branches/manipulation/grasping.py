@@ -36,7 +36,7 @@ class GraspFromObservation(Sequence):
           TranslatePose(z=0.1, load_key='grasp_pose'),
           VisualisePose(load_key='grasp_pose'),
           FailureIsRunning(MoveGripperToPose(load_key='grasp_pose', speed=speed)),
-          TranslatePose(z=-0.1, load_key='grasp_pose'),
+          TranslatePose(z=-0.09, load_key='grasp_pose'),
           VisualisePose(load_key='grasp_pose'),
         
           Parallel(children=[
@@ -50,7 +50,7 @@ class GraspFromObservation(Sequence):
           # ServiceLeaf('Recover', '/arm/recover', save=False),
           TranslatePose(z=0.4, load_key='grasp_pose'),
           FailureIsRunning(MoveGripperToPose(load_key='grasp_pose', speed=speed)),
-          # Inverter(IsGripperClosed())
+          Inverter(IsGripperClosed())
         ])
       ]
     )
