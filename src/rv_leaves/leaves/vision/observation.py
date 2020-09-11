@@ -39,4 +39,3 @@ class SortObservation(Leaf):
       self.loaded_data.detections, self.sort_fn
     )
     return self.loaded_data
-

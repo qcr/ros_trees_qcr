@@ -100,7 +100,7 @@ class GetJointPoses(SubscriberLeaf):
       name=name,
       topic_name=topic_name,
       topic_class=topic_class,
-      result_fn=lambda leaf: leaf._cached_data.joint_poses,
+      result_fn=lambda leaf: leaf._cached_data.joint_poses if leaf._cached_data else None,
       *args,
       **kwargs
     )
