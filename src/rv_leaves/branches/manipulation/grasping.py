@@ -1,16 +1,19 @@
 import copy
-
+import py_trees
 import rv_trees.data_management as dm
-from py_trees.composites import Sequence
+from py_trees.composites import Sequence, Selector, Parallel
+from py_trees.decorators import FailureIsRunning, Inverter, FailureIsSuccess
+from rv_trees.leaves_ros import ServiceLeaf
 from rv_trees.leaves import Leaf
 from rv_leaves.leaves.generic.console import Print
 from rv_leaves.leaves.generic.pose import TranslatePose
-from rv_leaves.leaves.manipulation.grasping import ActuateGripper, Grasp
-from rv_leaves.leaves.manipulation.motion import MoveToNamedGripperPose, MoveGripperToPose, Servo
-from rv_leaves.leaves.manipulation.status import GetEEPose
+from rv_leaves.leaves.manipulation.grasping import ActuateGripper, Grasp, IsGripperClosed
+from rv_leaves.leaves.manipulation.motion import MoveToNamedGripperPose, MoveGripperToPose, ServoGripperToPose, SetCartesianPlanningEnabled
+from rv_leaves.leaves.manipulation.status import GetEEPose, IsContacting
+from rv_leaves.leaves.visualisation.pose import VisualisePose
 
 class GraspFromObservation(Sequence):
-  def __init__(self, gripper_width=None, *args, **kwargs):
+  def __init__(self, gripper_width=None, speed=0.1, *args, **kwargs):
     super(GraspFromObservation, self).__init__(
       'Grasp Object from Observation', children=[
         Leaf(
@@ -25,16 +28,29 @@ class GraspFromObservation(Sequence):
             save_key='grasp_pose',
             result_fn=lambda leaf: leaf.loaded_data.detections[0].grasp_pose if len(leaf.loaded_data.detections) else None, 
         ),
+        Print(load_key='grasp_pose'),
+        VisualisePose(load_key='grasp_pose'),
         GetEEPose('Get EE Pose', save_key='ee_pose'),
         Sequence(name="Execute Grasp", children=[
           ActuateGripper(load_key="grasp_width"),
           TranslatePose(z=0.1, load_key='grasp_pose'),
-          MoveGripperToPose(load_key='grasp_pose'),
+          VisualisePose(load_key='grasp_pose'),
+          FailureIsRunning(MoveGripperToPose(load_key='grasp_pose', speed=speed)),
           TranslatePose(z=-0.1, load_key='grasp_pose'),
-          Print(load_key='grasp_pose'),
-          Servo(load_key='grasp_pose'),
-          Grasp(),
-          MoveToNamedGripperPose(load_value='ready')
+          VisualisePose(load_key='grasp_pose'),
+        
+          Parallel(children=[
+            FailureIsRunning(MoveGripperToPose(load_key='grasp_pose', speed=speed)),
+            # FailureIsRunning(
+            #   IsContacting()
+            # )
+          ], policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ONE),
+          # ServiceLeaf('Recover', '/arm/recover', save=False),
+          FailureIsSuccess(Grasp()),
+          # ServiceLeaf('Recover', '/arm/recover', save=False),
+          TranslatePose(z=0.4, load_key='grasp_pose'),
+          FailureIsRunning(MoveGripperToPose(load_key='grasp_pose', speed=speed)),
+          # Inverter(IsGripperClosed())
         ])
       ]
     )

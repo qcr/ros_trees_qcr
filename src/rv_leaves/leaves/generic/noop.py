@@ -18,7 +18,4 @@ class Wait(Leaf):
       self.ts = rospy.get_time()
 
   def _is_leaf_done(self):
-    if rospy.get_time() - self.ts > self.loaded_data:
-      return True
-
-    return False
+    return rospy.get_time() - self.ts > self.loaded_data

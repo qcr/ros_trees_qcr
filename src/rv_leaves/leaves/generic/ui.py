@@ -42,6 +42,7 @@ class GetMaskFromClick(Sequence):
                   valid.append(obj)
 
             observation.detections = valid
+            print('Valid:', len(valid))
           
           else:
             image = ros_numpy.numpify(observation.rgb_image)

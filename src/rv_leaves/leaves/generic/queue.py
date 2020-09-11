@@ -79,7 +79,24 @@ class PeekItem(Leaf):
     dm.set_value(self.key, entries)
 
     return item
+
+class ClearItems(Leaf):
+  def __init__(self, name='Clear Items', key=None, *args, **kwargs):
+    if not key:
+      raise ValueError('Missing required field: key')
     
+    super(ClearItems, self).__init__(
+      name=name, 
+      result_fn=self.result_fn,
+      *args, 
+      **kwargs
+    )
+    self.key = key
+
+  def result_fn(self):
+    dm.set_value(self.key, [])
+    return True
+
 class ChooseRandom(Leaf):
   def __init__(self, name='Select Random', items=[], *args, **kwargs):
     super(ChooseRandom, self).__init__(
