@@ -28,7 +28,6 @@ class GraspFromObservation(Sequence):
             save_key='grasp_pose',
             result_fn=lambda leaf: leaf.loaded_data.detections[0].grasp_pose if len(leaf.loaded_data.detections) else None, 
         ),
-        Print(load_key='grasp_pose'),
         VisualisePose(load_key='grasp_pose'),
         GetEEPose('Get EE Pose', save_key='ee_pose'),
         Sequence(name="Execute Grasp", children=[
