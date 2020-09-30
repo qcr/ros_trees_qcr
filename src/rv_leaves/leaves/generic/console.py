@@ -11,14 +11,18 @@ except NameError:
 
 
 class Print(Leaf):
-    def __init__(self, name='Print', *args, **kwargs):
+    def __init__(self, name='Print', format_string=None, *args, **kwargs):
         super(Print, self).__init__(name,
                                     result_fn=self._result_fn,
                                     *args,
                                     **kwargs)
+        self.format_string = format_string
 
     def _result_fn(self):
-        print(self.loaded_data)
+        if self.format_string:
+            print(self.format_string % self.loaded_data)
+        else:
+            print(self.loaded_data)
         return self.loaded_data
 
 class Read(Leaf):
