@@ -11,9 +11,9 @@ from rv_trees.leaves_ros import PublisherLeaf
 from sensor_msgs.msg import Image, CompressedImage
 
 class VisualiseObservation(PublisherLeaf):
-  def __init__(self, name='Visualise observation', topic_name='/observation/visualised', topic_class=Image, draw_bounding_box=True, draw_overlay=True, *args, **kwargs):
+  def __init__(self, name=None, topic_name='/observation/visualised', topic_class=Image, draw_bounding_box=True, draw_overlay=True, *args, **kwargs):
     super(VisualiseObservation, self).__init__(
-      name=name,
+      name=name if name else 'Visualise observation',
       topic_name=topic_name,
       topic_class=topic_class,
       load_fn=self.load_fn,

@@ -11,8 +11,8 @@ except NameError:
 
 
 class Print(Leaf):
-    def __init__(self, name='Print', format_string=None, *args, **kwargs):
-        super(Print, self).__init__(name,
+    def __init__(self, name=None, format_string=None, *args, **kwargs):
+        super(Print, self).__init__(name if name else 'Print',
                                     result_fn=self._result_fn,
                                     *args,
                                     **kwargs)

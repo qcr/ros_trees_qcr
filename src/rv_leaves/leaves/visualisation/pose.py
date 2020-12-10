@@ -7,8 +7,8 @@ from geometry_msgs.msg import TransformStamped
 from rv_msgs.msg import Observation
 
 class VisualisePose(Leaf):
-  def __init__(self, name='Visualise Poses', transform_name='visualised', *args, **kwargs):
-    super(VisualisePose, self).__init__(name, result_fn=self.result_fn, *args, **kwargs)
+  def __init__(self, name=None, transform_name='visualised', *args, **kwargs):
+    super(VisualisePose, self).__init__(name if name else 'Visualise Poses', result_fn=self.result_fn, *args, **kwargs)
     self.transform_name = transform_name
     self.broadcaster = None
 

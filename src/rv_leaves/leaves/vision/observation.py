@@ -5,9 +5,9 @@ from rv_msgs.msg import Observation
 from sensor_msgs.msg import Image, CameraInfo
 
 class GetObservation(SyncedSubscriberLeaf):
-  def __init__(self, name='Get Observation', topic_names=None, topic_classes=None, result_fn=None, *args, **kwargs):
+  def __init__(self, name=None, topic_names=None, topic_classes=None, result_fn=None, *args, **kwargs):
     super(GetObservation, self).__init__(
-      name=name,
+      name=name if name else 'Get Observation',
       topic_names=topic_names if topic_names else [
         '/camera/aligned_depth_to_color/camera_info',
         '/camera/depth/image_meters_aligned',
@@ -30,8 +30,8 @@ class GetObservation(SyncedSubscriberLeaf):
 
 
 class SortObservation(Leaf):
-  def __init__(self, name='Sort', sort_fn=None, *args, **kwargs):
-    super(SortObservation, self).__init__(name, result_fn=self.result_fn, *args, **kwargs)
+  def __init__(self, name=None, sort_fn=None, *args, **kwargs):
+    super(SortObservation, self).__init__(name if name else 'Sort', result_fn=self.result_fn, *args, **kwargs)
     self.sort_fn = sort_fn if sort_fn else lambda a, b: 1 if a.class_label > b.class_label else -1
 
   def result_fn(self):

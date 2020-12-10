@@ -3,8 +3,8 @@ import rospy
 from rv_trees.leaves import Leaf
 
 class Noop(Leaf):
-  def __init__(self, name="NOOP", *args, **kwargs):
-    super(Noop, self).__init__(name, eval_fn=lambda leaf, value: True, *args, **kwargs)
+  def __init__(self, name="NOOP", success=True, *args, **kwargs):
+    super(Noop, self).__init__(name, eval_fn=lambda leaf, value: success, *args, **kwargs)
 
 class Wait(Leaf):
   def __init__(self, name='Wait', *args, **kwargs):
