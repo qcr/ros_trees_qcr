@@ -5,13 +5,14 @@ import tf2_geometry_msgs
 from tf.transformations import *
 from rv_trees.leaves import Leaf
 
-from geometry_msgs.msg import Quaternion
+from geometry_msgs.msg import Quaternion, PoseStamped
 
 class TranslatePose(Leaf):
-  def __init__(self, name="Translate Pose", x=0, y=0, z=0, rx=0, ry=0, rz=0, height_fn=None, *args, **kwargs):
+  def __init__(self, name="Translate Pose", x=0, y=0, z=0, rx=0, ry=0, rz=0, height_fn=None, save=True, *args, **kwargs):
     super(TranslatePose, self).__init__(
       name,
       result_fn=self.result_fn,
+      save=save,
       *args,
       **kwargs
     )
@@ -31,7 +32,14 @@ class TranslatePose(Leaf):
 
   def result_fn(self):
     result = self._default_result_fn()
-    
+
+    if not isinstance(result, PoseStamped):
+      for key in result.__slots__:
+        if isinstance(getattr(result, key), PoseStamped):
+          result = getattr(result, key)
+          break
+
+    print(result)
     result.pose.position.x += self.x
     result.pose.position.y += self.y
     result.pose.position.z += self.height_fn()
@@ -42,7 +50,7 @@ class TranslatePose(Leaf):
     rotated = quaternion_multiply(current, rotation)
 
     result.pose.orientation = self.list_to_quaternion(rotated)
-    
+    print(result)
     return result
 
   def quaternion_to_list(self, quaternion):
@@ -67,5 +75,13 @@ class TransformPose(Leaf):
     rospy.sleep(1)
     
   def result_fn(self):
-    tf = self._tf_buffer.lookup_transform(self.target_frame, self.loaded_data.header.frame_id, rospy.Duration(0.0))
-    return tf2_geometry_msgs.do_transform_pose(self.loaded_data, tf)
+    result = self._default_result_fn()
+
+    if not isinstance(result, PoseStamped):
+      for key in result.__slots__:
+        if isinstance(getattr(result, key), PoseStamped):
+          result = getattr(result, key)
+          break
+
+    tf = self._tf_buffer.lookup_transform(self.target_frame, result.header.frame_id, rospy.Duration(0.0))
+    return tf2_geometry_msgs.do_transform_pose(result, tf)

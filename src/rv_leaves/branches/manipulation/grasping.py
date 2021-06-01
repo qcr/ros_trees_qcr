@@ -40,8 +40,8 @@ class GraspFromObservation(Sequence):
           MoveGripperToPose(load_key='grasp_pose', speed=speed),
           FailureIsSuccess(Grasp()),
           TranslatePose(z=0.4, load_key='grasp_pose'),
-          FailureIsRunning(MoveGripperToPose(load_key='grasp_pose', speed=speed)),
-          Inverter(IsGripperClosed())
+          MoveGripperToPose(load_key='grasp_pose', speed=speed),
+          # Inverter(IsGripperClosed())
         ])
       ]
     )
