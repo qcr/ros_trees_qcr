@@ -1,8 +1,8 @@
 from py_trees.composites import Selector, Sequence
 from py_trees.decorators import Inverter
 
-from rv_leaves.leaves.generic.task import IsTaskSelected
-from rv_leaves.leaves.generic.queue import *
+from ros_leaves.leaves.generic.task import IsTaskSelected
+from ros_leaves.leaves.generic.queue import *
 
 class Task(Selector):
   def __init__(self, task_name='', child=None, before=[]):

@@ -2,7 +2,7 @@ import rospy
 import uuid
 
 from py_trees.composites import Sequence
-from rv_trees.leaves import Leaf
+from ros_trees.leaves import Leaf
 
 class TimedRelease(Sequence):
   def __init__(self, name='Timed Release', children=[], expiry_time=1):

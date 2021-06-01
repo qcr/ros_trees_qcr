@@ -1,6 +1,6 @@
-# RV Tasks Package
+# ROS Leaves Package
 
-The RV Tasks package is where we define all of the tasks our robots are capable of performing. Tasks are written in a robot agnostic way from a software perspective, with specific robot hardware capabilities being the only factor limiting a robot from specific tasks (we haven't yet figured how to make an armless mobile base pick up a coffee...). 
+The ROS Leaves package is where we define all of the tasks our robots are capable of performing. Tasks are written in a robot agnostic way from a software perspective, with specific robot hardware capabilities being the only factor limiting a robot from specific tasks (we haven't yet figured how to make an armless mobile base pick up a coffee...). 
 
 A **task** refers to something distinct we want the robot to do, often requiring purposeful interweaving of many distinct components; components which often come from many different internal and external authors. Bringing software together from different research areas, with different authors, and different conventions is a process typically associated with a lot of pain. To manage this, we break completing a task up into some isolated concepts and software components which are described in detail below. 
 
@@ -39,7 +39,7 @@ Here's the 1,2,3 TL;DR for creating a tree to solve a task:
 1. Create some leaves:
 
         #!python
-        from rv_trees.leaves_ros import ActionLeaf, ServiceLeaf
+        from ros_trees.leaves_ros import ActionLeaf, ServiceLeaf
 
         class DeriveSolution(ServiceLeaf):
             def __init__(self, *args, **kwargs):
@@ -53,7 +53,7 @@ Here's the 1,2,3 TL;DR for creating a tree to solve a task:
 
         #!python
         from py_trees.composite import Sequence
-        from rv_trees.trees import BehaviourTree
+        from ros_trees.trees import BehaviourTree
 
         my_tree = BehaviourTree("Solve Task", Sequence("Solve", [DeriveSolution(), ApplySolution()]))
 
@@ -82,7 +82,7 @@ Other helpful commands:
 - Getting a static GraphViz graphic for your tree:
 
         #!python
-        from rv_trees.trees import BehaviourTree
+        from ros_trees.trees import BehaviourTree
         # Create your tree in a variable called 'my_tree'
         my_tree.visualise()
 
@@ -92,7 +92,7 @@ Below are some conventions & best practices we encourage everyone to use. This p
 
 - Use existing leaves and branches where possible (maximising reuse promotes greater consistency & robustness of our systems)
 - A leaf should be as input-agnostic as possible (e.g. writing a leaf to only work with a 3x1 numpy array of Float64s when in reality it could work with any iterable of 3 numbers only hinders future use of your leaf)
-- If you want your leaf or branch to be used by people, include it in the appropriate section of `rv_leaves.common_leaves.*` or `rv_leaves.common_branches.*`
+- If you want your leaf or branch to be used by people, include it in the appropriate section of `ros_leaves.common_leaves.*` or `ros_leaves.common_branches.*`
 - Extend functionality in your own class rather than messing with the base `Leaf` classes (including )
 
 
@@ -104,6 +104,6 @@ TODO.... include an auto generated table of existing leaf definitions
 ## Useful links & information
 
 - [py_trees demos for understand tree behaviour](https://py-trees.readthedocs.io/en/release-0.6.x/demos.html)
-- [py_trees_ros tutorials for behaviour trees on ROS - note: we use rv_trees instead of this package mostly](http://docs.ros.org/kinetic/api/py_trees_ros/html/tutorials.html)
+- [py_trees_ros tutorials for behaviour trees on ROS - note: we use ros_trees instead of this package mostly](http://docs.ros.org/kinetic/api/py_trees_ros/html/tutorials.html)
 - [a good generic behaviour trees tutorial](https://www.gamasutra.com/blogs/ChrisSimpson/20140717/221339/Behavior_trees_for_AI_How_they_work.php)
 - [textbook on behaviour treees in robotics and AI with a thorough description of everything trees](https://www.semanticscholar.org/paper/Behavior-Trees-in-Robotics-and-AI%3A-An-Introduction-Colledanchise-%C3%96gren/9830c9d16293f8f87f998aa449143f0ed1554d1a)

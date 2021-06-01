@@ -1,6 +1,6 @@
 
-from rv_trees.leaves_ros import ActionLeaf, ServiceLeaf
-from rv_msgs.msg import MoveToJointPoseGoal
+from ros_trees.leaves_ros import ActionLeaf, ServiceLeaf
+from ros_msgs.msg import MoveToJointPoseGoal
 from actionlib_msgs.msg import GoalStatus
 
 class GetNamedGripperPoses(ServiceLeaf):

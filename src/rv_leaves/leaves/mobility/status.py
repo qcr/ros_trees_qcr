@@ -1,8 +1,8 @@
-from rv_trees.leaves_ros import SubscriberLeaf
-from rv_trees.leaves import Leaf
+from ros_trees.leaves_ros import SubscriberLeaf
+from ros_trees.leaves import Leaf
 
 try:
-  from rv_omron_driver.msg import Omron
+  from ros_omron_driver.msg import Omron
 
   class GetRobotStatus(SubscriberLeaf):
     def __init__(self, topic_name="/robot_status", topic_class=Omron, *args, **kargs):

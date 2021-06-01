@@ -3,7 +3,7 @@ import tf2_ros
 import tf2_geometry_msgs
 
 from tf.transformations import *
-from rv_trees.leaves import Leaf
+from ros_trees.leaves import Leaf
 
 from geometry_msgs.msg import Quaternion, PoseStamped
 

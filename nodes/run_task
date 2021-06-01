@@ -6,7 +6,7 @@ import rospkg
 import rospy
 from std_msgs.msg import String
 
-_TASKS_DIRECTORY = os.path.join(rospkg.RosPack().get_path('rv_leaves'),
+_TASKS_DIRECTORY = os.path.join(rospkg.RosPack().get_path('ros_leaves'),
                                 'tasks')
 _TASK_FILENAME = 'tree.py'
 _TREE_FN_NAME = 'tree'

@@ -1,16 +1,16 @@
 import copy
 import py_trees
-import rv_trees.data_management as dm
+import ros_trees.data_management as dm
 from py_trees.composites import Sequence, Selector, Parallel
 from py_trees.decorators import FailureIsRunning, Inverter, FailureIsSuccess
-from rv_trees.leaves_ros import ServiceLeaf
-from rv_trees.leaves import Leaf
-from rv_leaves.leaves.generic.console import Print
-from rv_leaves.leaves.generic.pose import TranslatePose
-from rv_leaves.leaves.manipulation.grasping import ActuateGripper, Grasp, IsGripperClosed
-from rv_leaves.leaves.manipulation.motion import MoveToNamedGripperPose, MoveGripperToPose, ServoGripperToPose, SetCartesianPlanningEnabled
-from rv_leaves.leaves.manipulation.status import GetEEPose, IsContacting
-from rv_leaves.leaves.visualisation.pose import VisualisePose
+from ros_trees.leaves_ros import ServiceLeaf
+from ros_trees.leaves import Leaf
+from ros_leaves.leaves.generic.console import Print
+from ros_leaves.leaves.generic.pose import TranslatePose
+from ros_leaves.leaves.manipulation.grasping import ActuateGripper, Grasp, IsGripperClosed
+from ros_leaves.leaves.manipulation.motion import MoveToNamedGripperPose, MoveGripperToPose, ServoGripperToPose, SetCartesianPlanningEnabled
+from ros_leaves.leaves.manipulation.status import GetEEPose, IsContacting
+from ros_leaves.leaves.visualisation.pose import VisualisePose
 
 class GraspFromObservation(Sequence):
   def __init__(self, gripper_width=None, speed=0.3, *args, **kwargs):

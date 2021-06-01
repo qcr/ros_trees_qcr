@@ -1,4 +1,4 @@
-from rv_trees.leaves_ros import ServiceLeaf
+from ros_trees.leaves_ros import ServiceLeaf
 
 class GetFaces(ServiceLeaf):
   def __init__(self, name=None, service_name='/service/face_tracking', *args, **kwargs):

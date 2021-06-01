@@ -11,11 +11,11 @@ from sensor_msgs.msg import Image
 from std_msgs.msg import Header
 import sys
 
-from rv_msgs.msg import (ActuateGripperAction, ActuateGripperGoal,
+from ros_msgs.msg import (ActuateGripperAction, ActuateGripperGoal,
                          ActuateGripperResult, MoveToNamedPoseAction,
                          MoveToNamedPoseResult, MoveToPoseAction,
                          MoveToPoseResult, Object)
-from rv_msgs.srv import (GetSyncedImages, GetSyncedImagesResponse, FindObjects,
+from ros_msgs.srv import (GetSyncedImages, GetSyncedImagesResponse, FindObjects,
                          FindObjectsResponse)
 
 

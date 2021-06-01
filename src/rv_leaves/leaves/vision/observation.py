@@ -1,7 +1,7 @@
-from rv_trees.leaves_ros import SyncedSubscriberLeaf
-from rv_trees.leaves import Leaf
+from ros_trees.leaves_ros import SyncedSubscriberLeaf
+from ros_trees.leaves import Leaf
 
-from rv_msgs.msg import Observation
+from ros_msgs.msg import Observation
 from sensor_msgs.msg import Image, CameraInfo
 
 class GetObservation(SyncedSubscriberLeaf):

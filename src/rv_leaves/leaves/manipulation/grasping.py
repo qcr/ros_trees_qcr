@@ -1,6 +1,6 @@
 
-from rv_trees.leaves_ros import ActionLeaf, SubscriberLeaf
-from rv_msgs.msg import ActuateGripperGoal
+from ros_trees.leaves_ros import ActionLeaf, SubscriberLeaf
+from ros_msgs.msg import ActuateGripperGoal
 
 from sensor_msgs.msg import JointState
 

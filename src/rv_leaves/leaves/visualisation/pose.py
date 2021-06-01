@@ -1,10 +1,10 @@
 import rospy
 import tf2_ros
 
-from rv_trees.leaves import Leaf
+from ros_trees.leaves import Leaf
 from geometry_msgs.msg import TransformStamped
 
-from rv_msgs.msg import Observation
+from ros_msgs.msg import Observation
 
 class VisualisePose(Leaf):
   def __init__(self, name=None, transform_name='visualised', *args, **kwargs):

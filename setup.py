@@ -20,7 +20,7 @@ def get_packages(dir):
   return result
 
 d = generate_distutils_setup(
-  packages=get_packages('src/rv_leaves'), 
+  packages=get_packages('src/ros_leaves'), 
   package_dir={'': 'src'}
 )
 

@@ -1,13 +1,13 @@
 from __future__ import print_function
 from py_trees.composites import Sequence
-from rv_trees.leaves import Leaf
-from rv_trees.trees import BehaviourTree
+from ros_trees.leaves import Leaf
+from ros_trees.trees import BehaviourTree
 import sys
 import time
 import rospy
 
-from rv_leaves.leaves.console import Print, SelectItem
-from rv_leaves.leaves.manipulation import GetNamedGripperPoses, MoveToNamedGripperPose
+from ros_leaves.leaves.console import Print, SelectItem
+from ros_leaves.leaves.manipulation import GetNamedGripperPoses, MoveToNamedGripperPose
 
 
 def tree():

@@ -6,7 +6,7 @@ import cv_bridge
 import numpy as np
 
 from py_trees.composites import Sequence, Selector
-from rv_trees.leaves_ros import PublisherLeaf
+from ros_trees.leaves_ros import PublisherLeaf
 
 from sensor_msgs.msg import Image, CompressedImage
 

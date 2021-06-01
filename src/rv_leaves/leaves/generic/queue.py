@@ -1,7 +1,7 @@
 import random
 
-import rv_trees.data_management as dm
-from rv_trees.leaves import Leaf
+import ros_trees.data_management as dm
+from ros_trees.leaves import Leaf
 
 class PushItem(Leaf):
   def __init__(self, name='Push item', key=None, *args, **kwargs):

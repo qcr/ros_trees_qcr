@@ -1,6 +1,6 @@
 
-from rv_trees.leaves_ros import ActionLeaf
-from rv_leaves.leaves.generic.queue import ChooseRandom
+from ros_trees.leaves_ros import ActionLeaf
+from ros_leaves.leaves.generic.queue import ChooseRandom
 from py_trees.composites import Sequence
 
 class PlayAudio(ActionLeaf):

@@ -1,4 +1,4 @@
-from rv_trees.leaves_ros import SubscriberLeaf
+from ros_trees.leaves_ros import SubscriberLeaf
 from std_msgs.msg import String
 
 class IsTaskSelected(SubscriberLeaf):

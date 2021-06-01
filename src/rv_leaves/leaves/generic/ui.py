@@ -1,14 +1,14 @@
 import ros_numpy
 import numpy as np
-import rv_trees.data_management as dm
+import ros_trees.data_management as dm
 
 from py_trees.composites import Sequence
-from rv_trees.leaves import Leaf
-from rv_trees.leaves_ros import SubscriberLeaf
+from ros_trees.leaves import Leaf
+from ros_trees.leaves_ros import SubscriberLeaf
 
 from sensor_msgs.msg import Image
-from rv_msgs.msg import Click
-from rv_msgs.msg import Detection
+from ros_msgs.msg import Click
+from ros_msgs.msg import Detection
 
 class GetClick(SubscriberLeaf):
   def __init__(self, name='Checking user input', topic_name='/click', topic_class=Click, result_fn=None, expiry_time=None, *args, **kwargs):
