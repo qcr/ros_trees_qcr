@@ -1,8 +1,8 @@
 # ROS Leaves Package
 
-The ROS Leaves package is where we define all of the tasks our robots are capable of performing. Tasks are written in a robot agnostic way from a software perspective, with specific robot hardware capabilities being the only factor limiting a robot from specific tasks (we haven't yet figured how to make an armless mobile base pick up a coffee...). 
+The ROS Leaves package is where we define all of the tasks our robots are capable of performing. Tasks are written in a robot agnostic way from a software perspective, with specific robot hardware capabilities being the only factor limiting a robot from specific tasks (we haven't yet figured how to make an armless mobile base pick up a coffee...).
 
-A **task** refers to something distinct we want the robot to do, often requiring purposeful interweaving of many distinct components; components which often come from many different internal and external authors. Bringing software together from different research areas, with different authors, and different conventions is a process typically associated with a lot of pain. To manage this, we break completing a task up into some isolated concepts and software components which are described in detail below. 
+A **task** refers to something distinct we want the robot to do, often requiring purposeful interweaving of many distinct components; components which often come from many different internal and external authors. Bringing software together from different research areas, with different authors, and different conventions is a process typically associated with a lot of pain. To manage this, we break completing a task up into some isolated concepts and software components which are described in detail below.
 
 ## What does it mean to define a solution to a task
 
@@ -38,53 +38,60 @@ Here's the 1,2,3 TL;DR for creating a tree to solve a task:
 
 1. Create some leaves:
 
-        #!python
-        from ros_trees.leaves_ros import ActionLeaf, ServiceLeaf
+   ```python
+   from ros_trees.leaves_ros import ActionLeaf, ServiceLeaf
 
-        class DeriveSolution(ServiceLeaf):
-            def __init__(self, *args, **kwargs):
-                super(DeriveSolution, self).__init__(service_name="/derive_solution", *args, **kwargs)
+   class DeriveSolution(ServiceLeaf):
+       def __init__(self, *args, **kwargs):
+           super(DeriveSolution, self).__init__(service_name="/derive_solution", *args, **kwargs)
 
-        class ApplySolution(ActionLeaf):
-            def __init__(self, *args, **kwargs):
-                super(DeriveSolution, self).__init__(action_namespace="/apply_solution", *args, **kwargs)
+   class ApplySolution(ActionLeaf):
+       def __init__(self, *args, **kwargs):
+           super(DeriveSolution, self).__init__(action_namespace="/apply_solution", *args, **kwargs)
+   ```
 
 2. Join the leaves up in a tree that solves a task:
 
-        #!python
-        from py_trees.composite import Sequence
-        from ros_trees.trees import BehaviourTree
+   ```python
+   from py_trees.composite import Sequence
+   from ros_trees.trees import BehaviourTree
 
-        my_tree = BehaviourTree("Solve Task", Sequence("Solve", [DeriveSolution(), ApplySolution()]))
+   my_tree = BehaviourTree("Solve Task", Sequence("Solve", [DeriveSolution(), ApplySolution()]))
+   ```
 
 3. Run the tree:
 
-        #!python
-        my_tree.run(hz=30)
+   ```python
+   my_tree.run(hz=30)
+   ```
 
 Other helpful commands:
 
 - Showing an interactive tree with `rqt`:
 
-        #!bash
-        rqt_py_trees
+  ```
+  rqt_py_trees
+  ```
 
 - Printing trees interactively in the terminal:
 
-        #!bash
-        rosrun py_trees_ros py-trees-tree-watcher
+  ```
+  rosrun py_trees_ros py-trees-tree-watcher
+  ```
 
 - Printing blackboard variable values interactively:
 
-        #!bash
-        rosrun py_trees_ros py-trees-blackboard-watcher
+  ```
+  rosrun py_trees_ros py-trees-blackboard-watcher
+  ```
 
 - Getting a static GraphViz graphic for your tree:
 
-        #!python
-        from ros_trees.trees import BehaviourTree
-        # Create your tree in a variable called 'my_tree'
-        my_tree.visualise()
+  ```python
+  from ros_trees.trees import BehaviourTree
+  # Create your tree in a variable called 'my_tree'
+  my_tree.visualise()
+  ```
 
 ## Conventions & best practices
 
@@ -95,11 +102,9 @@ Below are some conventions & best practices we encourage everyone to use. This p
 - If you want your leaf or branch to be used by people, include it in the appropriate section of `ros_leaves.common_leaves.*` or `ros_leaves.common_branches.*`
 - Extend functionality in your own class rather than messing with the base `Leaf` classes (including )
 
-
 ## Sharing is Caring: What ready-made leaves are available?
 
 TODO.... include an auto generated table of existing leaf definitions
-
 
 ## Useful links & information
 
