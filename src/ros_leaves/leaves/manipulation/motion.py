@@ -52,6 +52,8 @@ class MoveToNamedGripperPose(ActionLeaf):
         super(MoveToNamedGripperPose,
               self).__init__("Move gripper to named pose",
                              action_namespace=action_namespace,
+                             load_fn=self.load_fn,
+                             eval_fn=self.eval_fn,
                              *args,
                              **kwargs)
         self.speed = speed
