@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>ros_leaves</name>
+  <name>ros_trees_leaves</name>
   <version>0.1.1</version>
-  <description>The ros_leaves package</description>
+  <description>The ros_trees_leaves package</description>
 
   <maintainer email="b.talbot@qut.edu.au">Ben Talbot</maintainer>
   <license>BSD</license>
