@@ -1,18 +1,9 @@
-cmake_minimum_required(VERSION 2.8.3)
-project(ros_leaves)
+cmake_minimum_required(VERSION 3.0.2)
+project(ros_trees_qcr)
 
 find_package(catkin REQUIRED)
 
 catkin_python_setup()
 
 catkin_package(
-  #  INCLUDE_DIRS include
-  #  LIBRARIES ros_leaves
-  #  CATKIN_DEPENDS other_catkin_pkg
-  #  DEPENDS system_lib
   )
-
-# install(PROGRAMS
-#   scripts/my_python_script
-#   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
