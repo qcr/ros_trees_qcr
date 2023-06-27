@@ -1,37 +1,39 @@
 from ros_trees.leaves_ros import ActionLeaf, SubscriberLeaf
-from rv_msgs.msg import ActuateGripperGoal
+
+# 2023-06-27 Deprecated message type - need to revisit inclusion into armer (if applicable)
+# from rv_msgs.msg import ActuateGripperGoal
 
 from sensor_msgs.msg import JointState
 
 
-class Grasp(ActionLeaf):
+# class Grasp(ActionLeaf):
 
-    def __init__(self,
-                 name=None,
-                 action_namespace='/arm/gripper',
-                 speed=0,
-                 force=0,
-                 *args,
-                 **kwargs):
-        super(Grasp, self).__init__(name if name else 'Grasp object',
-                                    action_namespace=action_namespace,
-                                    load_fn=self.load_fn,
-                                    *args,
-                                    **kwargs)
-        self.speed = speed
-        self.force = force
+#     def __init__(self,
+#                  name=None,
+#                  action_namespace='/arm/gripper',
+#                  speed=0,
+#                  force=0,
+#                  *args,
+#                  **kwargs):
+#         super(Grasp, self).__init__(name if name else 'Grasp object',
+#                                     action_namespace=action_namespace,
+#                                     load_fn=self.load_fn,
+#                                     *args,
+#                                     **kwargs)
+#         self.speed = speed
+#         self.force = force
 
-    def load_fn(self):
-        grasp_goal = self._default_load_fn(auto_generate=False)
+#     def load_fn(self):
+#         grasp_goal = self._default_load_fn(auto_generate=False)
 
-        if type(grasp_goal) != ActuateGripperGoal:
-            return ActuateGripperGoal(
-                mode=ActuateGripperGoal.MODE_GRASP,
-                width=grasp_goal if type(grasp_goal) == float else 0.0,
-                speed=self.speed,
-                force=self.force)
+#         if type(grasp_goal) != ActuateGripperGoal:
+#             return ActuateGripperGoal(
+#                 mode=ActuateGripperGoal.MODE_GRASP,
+#                 width=grasp_goal if type(grasp_goal) == float else 0.0,
+#                 speed=self.speed,
+#                 force=self.force)
 
-        return grasp_goal
+#         return grasp_goal
 
 
 class ActuateGripper(ActionLeaf):

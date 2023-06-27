@@ -6,7 +6,8 @@ from ros_trees.leaves_common import TransformPose, TranslatePose
 
 from ...leaves.manipulation.motion import (GetTaggedLocationPose,
                                            MoveGripperToPose)
-from ...leaves.visualisation.pose import VisualisePose
+# 2023-06-27 Deprecated message type - need to revisit inclusion into armer (if applicable)
+# from ...leaves.visualisation.pose import VisualisePose
 
 
 class MoveAboveTaggedLocation(Sequence):

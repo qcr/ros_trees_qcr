@@ -4,10 +4,12 @@ from py_trees.decorators import FailureIsSuccess
 from ros_trees.leaves import Leaf
 from ros_trees.leaves_common import TranslatePose
 
-from ...leaves.manipulation.grasping import ActuateGripper, Grasp
+# 2023-06-27 Deprecated message type - need to revisit inclusion into armer (if applicable)
+from ...leaves.manipulation.grasping import ActuateGripper #, Grasp
 from ...leaves.manipulation.motion import MoveGripperToPose
 from ...leaves.manipulation.status import GetEEPose
-from ...leaves.visualisation.pose import VisualisePose
+# 2023-06-27 Deprecated message type - need to revisit inclusion into armer (if applicable)
+# from ...leaves.visualisation.pose import VisualisePose
 
 
 class GraspFromObservation(Sequence):
